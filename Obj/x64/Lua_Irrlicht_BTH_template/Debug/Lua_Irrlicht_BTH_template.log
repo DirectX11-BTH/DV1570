@@ -1,1 +1,14 @@
-﻿  Lua_Irrlicht_BTH_template.vcxproj -> C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Bin/x64/Lua_Irrlicht_BTH_templateD.exe
+﻿  Main.cpp
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Main.cpp(39,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Main.cpp(40,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Main.cpp(41,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Main.cpp(152,15): warning C4002: too many arguments for function-like macro invocation 'lua_pcall'
+  Player.cpp
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Player.cpp(78,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Player.cpp(79,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Player.cpp(80,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Player.cpp(101,10): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Player.cpp(102,10): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Player.cpp(103,10): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+  Generating Code...
+  Lua_Irrlicht_BTH_template.vcxproj -> C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Bin/x64/Lua_Irrlicht_BTH_templateD.exe

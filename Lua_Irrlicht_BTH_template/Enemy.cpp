@@ -96,6 +96,19 @@ int Enemy::Enemy_Delete(lua_State* state)
 	return 0;
 }
 
+int Enemy::Enemy_Move(lua_State* state)
+{
+	float x = lua_tonumber(state, -1);
+	float y = lua_tonumber(state, -2);
+	float z = lua_tonumber(state, -3);
+	lua_pop(state, 3);
+
+	Enemy* enemy = checkEnemy(state, 1);
+	enemy->modelNode->setPosition(enemy->modelNode->getPosition() + core::vector3df(x, y, z));
+
+	return 0;
+}
+
 void Enemy::registerLuaCFunctions(lua_State* state) //Called externally once
 {
 	luaL_newmetatable(state, "MetaEnemy"); //Our metatable for lua
@@ -104,6 +117,7 @@ void Enemy::registerLuaCFunctions(lua_State* state) //Called externally once
 		{"new", Enemy_New},
 		{"print", Enemy::Enemy_Print},
 		{"setPosition", Enemy::Enemy_SetPosition},
+		{"move", Enemy::Enemy_Move},
 		{"__gc", Enemy::Enemy_Delete}, //Garbage collect function on lua's side
 		{NULL, NULL}
 	};

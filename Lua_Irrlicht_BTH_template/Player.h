@@ -15,30 +15,30 @@ using namespace irr;
 using namespace std;
 using namespace scene;
 
-class Enemy
+class Player
 {
 
 private:
-	
+
 	irr::scene::IAnimatedMeshSceneNode* modelNode;
 	int health = 100;
-	std::string name = "default";
+	std::string name = "default player";
 public:
 	static IrrlichtDevice* device;
 	static irr::scene::IAnimatedMesh* mesh;
 	static void loadMeshForClass();
 
-	Enemy(const char* name);
-	
-	static int Enemy_New(lua_State* state);
+	Player(const char* name);
 
-	static int Enemy_Print(lua_State* state);
-	static int Enemy_SetHealth(lua_State* state);
-	static int Enemy_SetPosition(lua_State* state);
-	static int Enemy_Delete(lua_State* state);
-	static int Enemy_Move(lua_State* state);
-	
-	static Enemy* checkEnemy(lua_State* state, int stackIndex);
+	static int Player_New(lua_State* state);
+
+	static int Player_Print(lua_State* state);
+	static int Player_SetHealth(lua_State* state);
+	static int Player_SetPosition(lua_State* state);
+	static int Player_Delete(lua_State* state);
+	static int Player_Move(lua_State* state);
+
+	static Player* checkPlayer(lua_State* state, int stackIndex);
 
 	static void registerLuaCFunctions(lua_State* state);
 	static void initClass(IrrlichtDevice* device, lua_State* state);

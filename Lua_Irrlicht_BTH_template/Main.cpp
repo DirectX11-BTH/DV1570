@@ -12,6 +12,7 @@
 #include "lua.hpp"
 #include <irrlicht.h>
 #include "Enemy.h"
+#include "Player.h"
 
 using namespace scene;
 using namespace irr;
@@ -73,6 +74,17 @@ void ConsoleThread(lua_State* luaState)
 
 int main()
 {
+	/*
+	if(receiver.IsKeyDown(irr::KEY_KEY_W))
+nodePosition.Y += MOVEMENT_SPEED * frameDeltaTime;
+else if(receiver.IsKeyDown(irr::KEY_KEY_S))
+nodePosition.Y -= MOVEMENT_SPEED * frameDeltaTime;
+
+if(receiver.IsKeyDown(irr::KEY_KEY_A))
+nodePosition.X -= MOVEMENT_SPEED * frameDeltaTime;
+else if(receiver.IsKeyDown(irr::KEY_KEY_D))
+nodePosition.X += MOVEMENT_SPEED * frameDeltaTime;
+'*/
 
 	IrrlichtDevice* device = createDevice(video::EDT_SOFTWARE, core::dimension2d<u32>(1080, 720), 16, false, false, true, 0);
 	device->setWindowCaption(L"Hello World! - Irrlicht Engine Demo");
@@ -84,8 +96,9 @@ int main()
 	luaL_openlibs(luaState);
 
 	Enemy::initClass(device, luaState);
+	Player::initClass(device, luaState);
 
-	luaL_dostring(luaState, "local myEnemy = Enemy.new('Harry') myEnemy:print() myEnemy:setPosition(-5, -5, -5)");
+	//luaL_dostring(luaState, "local myEnemy = Enemy.new('Harry') myEnemy:print() myEnemy:setPosition(-5, -5, -5)");
 
 	std::thread conThread(ConsoleThread, luaState);
 	if (!device)
@@ -106,13 +119,43 @@ int main()
 
 	guienv->addStaticText(L"Hello World! This is the Irrlicht Software renderer!", core::rect<s32>(10, 10, 260, 22), true);
 
+	luaL_dofile(luaState, "./update.lua");
 	while (device->run())
 	{
+		w = false;
+		s = false;
+		if(GetAsyncKeyState(KEY_KEY_W))
+		{
+			std::cout << "W" << std::endl;
+			w = true;
+		}
+		if (GetAsyncKeyState(KEY_KEY_S))
+		{
+			std::cout << "S" << std::endl;
+			s = true;
+		}
+
+		//lua_getglobal(luaState, "w");
+		lua_pushboolean(luaState, w);
+		lua_setglobal(luaState, "w");
+		//lua_pop(luaState, -1);
+
+		//lua_getglobal(luaState, "s");
+		lua_pushboolean(luaState, s);
+		lua_setglobal(luaState, "s");
+
+
 		//Separat skript som körs varje game loop - idk?
 		//luaL_dofile("./update.lua");
-		luaL_dofile(luaState, "./update.lua");
+		
 		lua_getglobal(luaState, "update");
-		lua_pcall(luaState, 1, 0, 0, 0);
+		int error = lua_pcall(luaState, 0, 0, 0, 0);
+
+		if (error)
+		{
+			std::cout << "error: " << lua_tostring(luaState, lua_gettop(luaState)) << std::endl;
+			lua_pop(luaState, 1);
+		}
 
 		driver->beginScene(true, true, video::SColor(255, 11, 11, 11));
 
