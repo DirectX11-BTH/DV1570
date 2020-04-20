@@ -13,6 +13,11 @@
 #include <irrlicht.h>
 #include "Enemy.h"
 #include "Player.h"
+#include "EventReceiver.h"
+//#include "Vector3Lua.h"
+
+const int HEIGHT = 720;
+const int WIDTH = 1080;
 
 using namespace scene;
 using namespace irr;
@@ -36,25 +41,67 @@ int setCameraPos(lua_State* luaState)
 {
 	if (lua_isnumber(luaState, -1) && lua_isnumber(luaState, -2) && lua_isnumber(luaState, -3))
 	{
-		float x = lua_tonumber(luaState, -1);
 		float y = lua_tonumber(luaState, -2);
 		float z = lua_tonumber(luaState, -3);
+		float x = lua_tonumber(luaState, -1);
+		
 		lua_pop(luaState, 3);
 
 		smgr->getActiveCamera()->setPosition(vector3df(x, y, z));
+		smgr->getActiveCamera()->setTarget(vector3df(x, 0, z));
 	}
 
 	return 0;
 }
 
-void pushKeysToLua()
+
+
+void pushKeysToLua(float mouseX, float mouseY)
 {
-	//sdfgadlfghl
+	//lua_getglobal(luaState, "w");
+	lua_pushboolean(luaState, w);
+	lua_setglobal(luaState, "w");
+	//lua_pop(luaState, -1);
+
+	//lua_getglobal(luaState, "s");
+	lua_pushboolean(luaState, s);
+	lua_setglobal(luaState, "s");
+
+	lua_pushboolean(luaState, a);
+	lua_setglobal(luaState, "a");
+
+	lua_pushboolean(luaState, d);
+	lua_setglobal(luaState, "d");
+
+	lua_pushnumber(luaState, mouseY);
+	lua_setglobal(luaState, "mouseY");
+
+	lua_pushnumber(luaState, mouseX);
+	lua_setglobal(luaState, "mouseX");
 }
 
 void checkKeys()
 {
-
+	w = false;
+	s = false;
+	d = false;
+	a = false;
+	if (GetAsyncKeyState(KEY_KEY_W))
+	{
+		w = true;
+	}
+	if (GetAsyncKeyState(KEY_KEY_S))
+	{
+		s = true;
+	}
+	if (GetAsyncKeyState(KEY_KEY_D))
+	{
+		d = true;
+	}
+	if (GetAsyncKeyState(KEY_KEY_A))
+	{
+		a = true;
+	}
 }
 
 void ConsoleThread(lua_State* luaState)
@@ -72,78 +119,57 @@ void ConsoleThread(lua_State* luaState)
 	}
 }
 
+void pushDimensionToLua()
+{
+	lua_pushnumber(luaState, WIDTH);
+	lua_setglobal(luaState, "screenWidth");
+
+	lua_pushnumber(luaState, HEIGHT);
+	lua_setglobal(luaState, "screenHeight");
+}
+
 int main()
 {
-	/*
-	if(receiver.IsKeyDown(irr::KEY_KEY_W))
-nodePosition.Y += MOVEMENT_SPEED * frameDeltaTime;
-else if(receiver.IsKeyDown(irr::KEY_KEY_S))
-nodePosition.Y -= MOVEMENT_SPEED * frameDeltaTime;
-
-if(receiver.IsKeyDown(irr::KEY_KEY_A))
-nodePosition.X -= MOVEMENT_SPEED * frameDeltaTime;
-else if(receiver.IsKeyDown(irr::KEY_KEY_D))
-nodePosition.X += MOVEMENT_SPEED * frameDeltaTime;
-'*/
-
-	IrrlichtDevice* device = createDevice(video::EDT_SOFTWARE, core::dimension2d<u32>(1080, 720), 16, false, false, true, 0);
+	EventReceiver receiver;
+	IrrlichtDevice* device = createDevice(video::EDT_SOFTWARE, core::dimension2d<u32>(WIDTH, HEIGHT), 16, false, false, true, &receiver);
 	device->setWindowCaption(L"Hello World! - Irrlicht Engine Demo");
 	video::IVideoDriver* driver = device->getVideoDriver();
 	smgr = device->getSceneManager();
 	gui::IGUIEnvironment* guienv = device->getGUIEnvironment();
+	
 
 	luaState = luaL_newstate();
 	luaL_openlibs(luaState);
 
 	Enemy::initClass(device, luaState);
 	Player::initClass(device, luaState);
+	//Vector3::initClass(device, luaState);
 
+	pushDimensionToLua();
 	//luaL_dostring(luaState, "local myEnemy = Enemy.new('Harry') myEnemy:print() myEnemy:setPosition(-5, -5, -5)");
 
 	std::thread conThread(ConsoleThread, luaState);
 	if (!device)
 		return 1;
 
-	/*path filename("actualCube.obj");
+	path filename("testQuad.obj");
 	scene::IAnimatedMesh* test = device->getSceneManager()->getMesh(filename);
-	if (!test)
-	{
-		// model could not be loaded
-		guienv->addStaticText(L"Error", core::rect<s32>(50, 10, 260, 22), true);
-	}
 	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode(test);
-	*/
-	smgr->addCameraSceneNode(0, vector3df(3, 10, 15), vector3df(0, 0, 0));
+	node->setScale(core::vector3df(10, 1, 10));
 
+	smgr->addCameraSceneNode(0, vector3df(0, 25, 0), vector3df(0, 0, 0));
+	
 	// Now we can load the mesh by calling irr::scene::ISceneManager::getMesh()
-
+	//driver->setClipPlane(0, 0, false);
 	guienv->addStaticText(L"Hello World! This is the Irrlicht Software renderer!", core::rect<s32>(10, 10, 260, 22), true);
 
 	luaL_dofile(luaState, "./update.lua");
 	while (device->run())
 	{
-		w = false;
-		s = false;
-		if(GetAsyncKeyState(KEY_KEY_W))
-		{
-			std::cout << "W" << std::endl;
-			w = true;
-		}
-		if (GetAsyncKeyState(KEY_KEY_S))
-		{
-			std::cout << "S" << std::endl;
-			s = true;
-		}
 
-		//lua_getglobal(luaState, "w");
-		lua_pushboolean(luaState, w);
-		lua_setglobal(luaState, "w");
-		//lua_pop(luaState, -1);
-
-		//lua_getglobal(luaState, "s");
-		lua_pushboolean(luaState, s);
-		lua_setglobal(luaState, "s");
-
+		driver->enableClipPlane(0,false);
+		checkKeys();
+		pushKeysToLua(receiver.GetMouseState().Position.X, receiver.GetMouseState().Position.Y);
 
 		//Separat skript som körs varje game loop - idk?
 		//luaL_dofile("./update.lua");

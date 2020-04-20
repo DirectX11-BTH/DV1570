@@ -15,6 +15,7 @@ Player::Player(const char* name)
 	this->health = 150;
 
 	modelNode = device->getSceneManager()->addAnimatedMeshSceneNode(mesh);
+	modelNode->setAutomaticCulling(scene::EAC_OFF);
 }
 
 int Player::Player_New(lua_State* state)
@@ -106,7 +107,36 @@ int Player::Player_Move(lua_State* state)
 	Player* player = checkPlayer(state, 1);
 	player->modelNode->setPosition(player->modelNode->getPosition() + core::vector3df(x, y, z));
 
+	lua_pushnumber(state, player->modelNode->getPosition().X);
+	lua_setglobal(state, "playerX");
+
+	lua_pushnumber(state, player->modelNode->getPosition().Z);
+	lua_setglobal(state, "playerZ");
+
 	return 0;
+}
+
+int Player::Player_SetRotation(lua_State* state)
+{
+	Player* player = checkPlayer(state, 1);
+	
+	float rot = 0.f;
+	if (lua_isnumber(state, -1))
+		rot = lua_tonumber(state, -1);
+
+	player->modelNode->setRotation(core::vector3df(0, rot, 0));
+
+	return 0;
+}
+
+int Player::Player_GetPosition(lua_State* state)
+{
+	Player* player = checkPlayer(state, 1);
+	lua_pushnumber(state, player->modelNode->getPosition().Z);
+	lua_pushnumber(state, player->modelNode->getPosition().Y);
+	lua_pushnumber(state, player->modelNode->getPosition().X);
+
+	return 3;
 }
 
 void Player::registerLuaCFunctions(lua_State* state) //Called externally once
@@ -118,6 +148,8 @@ void Player::registerLuaCFunctions(lua_State* state) //Called externally once
 		{"print", Player::Player_Print},
 		{"setPosition", Player::Player_SetPosition},
 		{"move", Player::Player_Move},
+		{"setRotation", Player::Player_SetRotation},
+		{"getPosition", Player::Player_GetPosition},
 		{"__gc", Player::Player_Delete}, //Garbage collect function on lua's side
 		{NULL, NULL}
 	};

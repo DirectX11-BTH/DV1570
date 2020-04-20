@@ -37,6 +37,8 @@ public:
 	static int Player_SetPosition(lua_State* state);
 	static int Player_Delete(lua_State* state);
 	static int Player_Move(lua_State* state);
+	static int Player_SetRotation(lua_State* state);
+	static int Player_GetPosition(lua_State* state);
 
 	static Player* checkPlayer(lua_State* state, int stackIndex);
 
