@@ -10,38 +10,36 @@
 #include <lua.hpp>
 #include "lua.hpp"
 #include <string>
-//using namespace scene;
+#include <assert.h>
+
 using namespace irr;
 using namespace std;
 using namespace scene;
 
-class Player
+class Projectile
 {
 
 private:
-
 	irr::scene::IAnimatedMeshSceneNode* modelNode;
-	int health = 100;
-	std::string name = "default player";
+
+	float xSpeed = 0;
+	float zSpeed = 0;
 public:
+	Projectile();
+
 	static IrrlichtDevice* device;
 	static irr::scene::IAnimatedMesh* mesh;
 
-	Player(const char* name);
+	static int Projectile_New(lua_State* state);
+	static Projectile* checkProjectile(lua_State* state, int stackIndex);
 
-	static int Player_New(lua_State* state);
-
-	static int Player_Print(lua_State* state);
-	static int Player_SetHealth(lua_State* state);
-	static int Player_SetPosition(lua_State* state);
-	static int Player_Delete(lua_State* state);
-	static int Player_Move(lua_State* state);
-	static int Player_SetRotation(lua_State* state);
-	static int Player_GetPosition(lua_State* state);
-
-	static Player* checkPlayer(lua_State* state, int stackIndex);
+	static int Projectile_Print(lua_State* state);
+	static int Projectile_SetPosition(lua_State* state);
+	static int Projectile_Delete(lua_State* state);
+	static int Projectile_Move(lua_State* state);
+	static int Projectile_GetPosition(lua_State* state);
+	static int Projectile_GetVelocity(lua_State* state); //Returns x and z velocity
 
 	static void registerLuaCFunctions(lua_State* state);
 	static void initClass(IrrlichtDevice* device, lua_State* state);
 };
-

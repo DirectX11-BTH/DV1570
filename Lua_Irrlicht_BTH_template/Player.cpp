@@ -1,13 +1,10 @@
 
 #include "Player.h"
 #include <assert.h>
-
+#include <aabbox3d.h>
 IrrlichtDevice* Player::device = nullptr;
 scene::IAnimatedMesh* Player::mesh = nullptr;
 
-void Player::loadMeshForClass()
-{
-}
 
 Player::Player(const char* name)
 {
@@ -15,7 +12,7 @@ Player::Player(const char* name)
 	this->health = 150;
 
 	modelNode = device->getSceneManager()->addAnimatedMeshSceneNode(mesh);
-	modelNode->setAutomaticCulling(scene::EAC_OFF);
+	mesh->setBoundingBox(core::aabbox3df(-3.f,-3.f,-3.f,3.f,3.f,3.f));
 }
 
 int Player::Player_New(lua_State* state)

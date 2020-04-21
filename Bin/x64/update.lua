@@ -1,10 +1,16 @@
---myEnemy = Enemy.new("Berra")
+myEnemy = Enemy.new("Berra")
 myPlayer = Player.new("Mr")
 
+myEnemy:setPosition(10, 0, 0)
+
+bullets = {}
 w = false
 s = false
 a = false
 d = false
+
+local shootDebounce = 0
+local requiredToShoot = 5
 
 --[[Vector = {x = 0, y = 0, z = 0}
 VectorMeta = {__index = Vector}
@@ -38,11 +44,8 @@ function update()
 
 	deltaX = middleX-mouseX
 	deltaY = middleY-mouseY
-	--print(deltaX, deltaY)
-	local angle = math.atan(deltaX, deltaY)--math.atan(deltaY, deltaX)
+	local angle = math.atan(deltaX, deltaY)
 	myPlayer:setRotation(-(angle * 180)/math.pi)
-	
-
 	
 	if w then
 		myPlayer:move(0, 0, 0.03)
@@ -59,8 +62,32 @@ function update()
 		myPlayer:move(-0.03, 0, 0)
 	end
 
+	if space then
+		
+	end
+
+	if mouseButtonOne and shootDebounce >= requiredToShoot then
+		local xSpeed = math.sin(angle)
+		local zSpeed = math.cos(angle)
+
+		xPos, yPos, zPos = myPlayer:getPosition()
+		
+		bullet = Projectile.new(xPos, yPos, zPos, xSpeed, zSpeed)
+
+		table.insert(bullets, bullet)
+		shootDebounce = 0
+	end
+
+	for i,v in pairs(bullets) do -- v is the bullet in the array
+		local xSpeed, zSpeed = v:getVelocity()
+		v:move(xSpeed, 0, zSpeed)
+	end
+
 	local x, y, z = myPlayer:getPosition()
 	setCameraPos(x, 25, z)
-	--myEnemy:move(0.001, 0, 0)
-	--print("This is working")
+
+	if shootDebounce < requiredToShoot then
+		shootDebounce = shootDebounce + 0.05
+	end
+
 end

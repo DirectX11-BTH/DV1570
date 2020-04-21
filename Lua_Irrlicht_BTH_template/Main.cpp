@@ -14,6 +14,7 @@
 #include "Enemy.h"
 #include "Player.h"
 #include "EventReceiver.h"
+#include "Projectile.h"
 //#include "Vector3Lua.h"
 
 const int HEIGHT = 720;
@@ -73,6 +74,12 @@ void pushKeysToLua(float mouseX, float mouseY)
 	lua_pushboolean(luaState, d);
 	lua_setglobal(luaState, "d");
 
+	lua_pushboolean(luaState, mouseButtonOne);
+	lua_setglobal(luaState, "mouseButtonOne");
+
+	lua_pushnumber(luaState, space);
+	lua_setglobal(luaState, "space");
+
 	lua_pushnumber(luaState, mouseY);
 	lua_setglobal(luaState, "mouseY");
 
@@ -86,6 +93,9 @@ void checkKeys()
 	s = false;
 	d = false;
 	a = false;
+	space = false;
+	mouseButtonOne = false;
+
 	if (GetAsyncKeyState(KEY_KEY_W))
 	{
 		w = true;
@@ -101,6 +111,14 @@ void checkKeys()
 	if (GetAsyncKeyState(KEY_KEY_A))
 	{
 		a = true;
+	}
+	if (GetAsyncKeyState(VK_LBUTTON))
+	{
+		mouseButtonOne = true;
+	}
+	if (GetAsyncKeyState(VK_SPACE))
+	{
+		space = true;
 	}
 }
 
@@ -143,6 +161,7 @@ int main()
 
 	Enemy::initClass(device, luaState);
 	Player::initClass(device, luaState);
+	Projectile::initClass(device, luaState);
 	//Vector3::initClass(device, luaState);
 
 	pushDimensionToLua();
@@ -155,7 +174,10 @@ int main()
 	path filename("testQuad.obj");
 	scene::IAnimatedMesh* test = device->getSceneManager()->getMesh(filename);
 	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode(test);
+	//node->setDebugDataVisible(1);
 	node->setScale(core::vector3df(10, 1, 10));
+	test->setBoundingBox(core::aabbox3df(-3.f,-3.f,-3.f,3.f,3.f,3.f));
+
 
 	smgr->addCameraSceneNode(0, vector3df(0, 25, 0), vector3df(0, 0, 0));
 	
