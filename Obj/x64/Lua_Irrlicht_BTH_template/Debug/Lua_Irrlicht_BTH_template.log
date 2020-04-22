@@ -1,13 +1,12 @@
-﻿  Projectile.cpp
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Projectile.cpp(21,16): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Projectile.cpp(22,16): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Projectile.cpp(26,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Projectile.cpp(27,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Projectile.cpp(28,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Projectile.cpp(81,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Projectile.cpp(82,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Projectile.cpp(83,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Projectile.cpp(105,10): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Projectile.cpp(106,10): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Lua_Irrlicht_BTH_template\Projectile.cpp(107,10): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-  Lua_Irrlicht_BTH_template.vcxproj -> C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template\Bin/x64/Lua_Irrlicht_BTH_templateD.exe
+﻿  Movable.cpp
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Movable.cpp(22,12): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Movable.cpp(23,12): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Movable.cpp(24,12): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Movable.cpp(63,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Movable.cpp(64,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Movable.cpp(65,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Movable.cpp(90,9): warning C4244: '=': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Movable.cpp(104,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Movable.cpp(105,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Movable.cpp(106,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+  Lua_Irrlicht_BTH_template.vcxproj -> C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Bin/x64/Lua_Irrlicht_BTH_templateD.exe

@@ -11,10 +11,9 @@
 #include <thread>
 #include "lua.hpp"
 #include <irrlicht.h>
-#include "Enemy.h"
-#include "Player.h"
+#include "Movable.h"
 #include "EventReceiver.h"
-#include "Projectile.h"
+
 //#include "Vector3Lua.h"
 
 const int HEIGHT = 720;
@@ -159,13 +158,8 @@ int main()
 	luaState = luaL_newstate();
 	luaL_openlibs(luaState);
 
-	Enemy::initClass(device, luaState);
-	Player::initClass(device, luaState);
-	Projectile::initClass(device, luaState);
-	//Vector3::initClass(device, luaState);
-
+	Movable::initClass(device, luaState);
 	pushDimensionToLua();
-	//luaL_dostring(luaState, "local myEnemy = Enemy.new('Harry') myEnemy:print() myEnemy:setPosition(-5, -5, -5)");
 
 	std::thread conThread(ConsoleThread, luaState);
 	if (!device)
@@ -177,13 +171,7 @@ int main()
 	//node->setDebugDataVisible(1);
 	node->setScale(core::vector3df(10, 1, 10));
 	test->setBoundingBox(core::aabbox3df(-3.f,-3.f,-3.f,3.f,3.f,3.f));
-
-
 	smgr->addCameraSceneNode(0, vector3df(0, 25, 0), vector3df(0, 0, 0));
-	
-	// Now we can load the mesh by calling irr::scene::ISceneManager::getMesh()
-	//driver->setClipPlane(0, 0, false);
-	guienv->addStaticText(L"Hello World! This is the Irrlicht Software renderer!", core::rect<s32>(10, 10, 260, 22), true);
 
 	luaL_dofile(luaState, "./update.lua");
 	while (device->run())
