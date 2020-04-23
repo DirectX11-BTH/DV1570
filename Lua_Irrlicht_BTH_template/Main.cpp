@@ -36,6 +36,38 @@ bool d = false;
 bool space = false;
 bool mouseButtonOne = false;
 
+void DumpStack(lua_State* L)
+{
+    std::cout << "------- STACK DUMP -------\n";
+    for(int i = lua_gettop(L); i > 0; i--)
+    {
+        std::cout << "Index " << i << ": " << lua_typename(L, lua_type(L, i)) << "\n";
+    }
+    std::cout << "--------------------------\n";
+}
+
+int checkCollision(lua_State* state)
+{
+	Movable* movable1 = Movable::checkMovable(state, -1);
+	Movable* movable2 = Movable::checkMovable(state, -2);
+
+	if (movable1 == nullptr || movable2 == nullptr)
+	{
+		std::cout << "ERROR, BOTH WERE NOT MOVABLES." << std::endl;
+		DumpStack(state);
+	}
+	bool collided = false;
+
+	//Do collision check s here 
+	//collided = true;
+	auto boundingBox1 = movable1->modelNode->getTransformedBoundingBox();
+	auto boundingBox2 = movable2->modelNode->getTransformedBoundingBox();
+	if (boundingBox1.intersectsWithBox(boundingBox2))
+		collided = true;
+	
+	lua_pushboolean(state, collided);
+	return 1;
+}
 
 int setCameraPos(lua_State* luaState)
 {
@@ -53,8 +85,6 @@ int setCameraPos(lua_State* luaState)
 
 	return 0;
 }
-
-
 
 void pushKeysToLua(float mouseX, float mouseY)
 {
@@ -126,6 +156,9 @@ void ConsoleThread(lua_State* luaState)
 	lua_pushcfunction(luaState, setCameraPos);
 	lua_setglobal(luaState, "setCameraPos");
 
+	lua_pushcfunction(luaState, checkCollision);
+	lua_setglobal(luaState, "checkCollision");
+
 	char command[1000];
 	while (GetConsoleWindow())
 	{
@@ -147,6 +180,7 @@ void pushDimensionToLua()
 
 int main()
 {
+
 	EventReceiver receiver;
 	IrrlichtDevice* device = createDevice(video::EDT_SOFTWARE, core::dimension2d<u32>(WIDTH, HEIGHT), 16, false, false, true, &receiver);
 	device->setWindowCaption(L"Hello World! - Irrlicht Engine Demo");
@@ -167,11 +201,36 @@ int main()
 
 	path filename("testQuad.obj");
 	scene::IAnimatedMesh* test = device->getSceneManager()->getMesh(filename);
+
 	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode(test);
+	// collision initialize
+	scene::ITriangleSelector* selector = 0;
+	if(node)
+	{
+		selector = smgr->createOctreeTriangleSelector(node->getMesh(), node, 128);
+		node->setTriangleSelector(selector);
+	}
+
+	
+
+	//scene::ISceneNodeAnimator* animator = smgr->createCollisionResponseAnimator(selector,
+	//test,							// the object to detect collision
+	//core::vector3df(30,50,30),	 //how big the object is),
+	//core::vector3df(0,0,0),		// direction and speed of gratity
+	//core::vector3df(0,0,0));		//translation
+	//selector->drop();
+	
 	//node->setDebugDataVisible(1);
 	node->setScale(core::vector3df(10, 1, 10));
+	node->setMaterialFlag(EMF_LIGHTING, true);
+
+
 	test->setBoundingBox(core::aabbox3df(-3.f,-3.f,-3.f,3.f,3.f,3.f));
 	smgr->addCameraSceneNode(0, vector3df(0, 25, 0), vector3df(0, 0, 0));
+
+	//scene::ILightSceneNode* light = smgr->addLightSceneNode(0, core::vector3df(0, 25, 0), video::SColor(0.5f, 0.5f, 0.5f, 0.0f), 40.f);
+	//light->setDebugDataVisible(scene::EDS_BBOX);
+
 
 	luaL_dofile(luaState, "./update.lua");
 	while (device->run())
@@ -192,6 +251,8 @@ int main()
 			std::cout << "error: " << lua_tostring(luaState, lua_gettop(luaState)) << std::endl;
 			lua_pop(luaState, 1);
 		}
+
+
 
 		driver->beginScene(true, true, video::SColor(255, 11, 11, 11));
 

@@ -122,6 +122,16 @@ int Movable::Movable_GetPosition(lua_State* state)
 	return 3;
 }
 
+int Movable::Movable_GetScale(lua_State* state)
+{
+	Movable* movable = checkMovable(state, 1);
+	lua_pushnumber(state, movable->modelNode->getScale().Z);
+	lua_pushnumber(state, movable->modelNode->getScale().Y);
+	lua_pushnumber(state, movable->modelNode->getScale().X);
+
+	return 3;
+}
+
 void Movable::registerLuaCFunctions(lua_State* state) //Called externally once
 {
 	luaL_newmetatable(state, "MetaMovable"); //Our metatable for lua
@@ -132,6 +142,7 @@ void Movable::registerLuaCFunctions(lua_State* state) //Called externally once
 		{"setScale", Movable::Movable_SetScale},
 		{"setRotation", Movable::Movable_SetRotation},
 		{"getPosition", Movable::Movable_GetPosition},
+		{"getScale", Movable::Movable_GetScale},
 		{"__gc", Movable::Movable_Delete}, //Garbage collect function on lua's side
 		{NULL, NULL}
 	};
@@ -144,6 +155,8 @@ void Movable::registerLuaCFunctions(lua_State* state) //Called externally once
 
 	lua_setglobal(state, "Movable"); //Expose 'Movable' to lua, sets value of 'Movable' table.
 }
+
+
 
 void Movable::initClass(IrrlichtDevice* device, lua_State* state)
 {

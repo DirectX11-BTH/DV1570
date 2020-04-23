@@ -1,12 +1,11 @@
+﻿bullets = {}
+enemies = {}
+
 MovableLua = {
 	position = {x = 0, y = 0, z = 0},
 	gameObject = nil
 }
 local movableMeta = {__index = MovableLua}
-
-function MovableLua:getPosition(x, y, z)
-	self.gameObject:getPosition(x, y, z)
-end
 
 function MovableLua:setPosition(x, y, z)
 	self.position.x = x
@@ -20,6 +19,8 @@ end
 function MovableLua:getRotation()
 	return self.gameObject:getRotation()
 end
+
+
 
 function MovableLua:setRotation(yaw)
 	self.gameObject:setRotation(yaw)
@@ -41,36 +42,61 @@ function MovableLua:setScale(x, y, z)
 end
 
 
-function MovableLua.new(table)
+function MovableLua:new(table)
 	local t = table or {}
-	t.gameObject = Movable:new(3,1,1) -- lua class is called Movable and is registered as so, takes scale
-	setmetatable(t, movableMeta)
-	--self.__index = self -- kommer nu kolla i sin egen prototyp n�r index inte hittas
-    --setmetatable(v, self)
+	
+	self.__index = self
+	setmetatable(t, self)
 
-
-	--self.__index = self
-	--setmetatable(t, self)
 	return t
+end
+
+function MovableLua:init3DModel()
+	self.gameObject = Movable:new(3,1,1) -- lua class is called Movable and is registered as so, takes scale
 end
 --------------------------------------------------------------------
---PlayerClass = MovableLua:new()
---PlayerClass.health = 100
-Projectile = {}
-function Projectile.new(xPos, yPos, zPos, xSpeed, zSpeed)
-	local t = MovableLua.new()
-	--t.gameObject = Movable.new(3,1,1)
-	t.xSpeed = xSpeed
-	t.zSpeed = zSpeed
 
-	t:setPosition(xPos, yPos, zPos)
-	return t
+Projectile = MovableLua:new() -- this is how you do inheritance 💥🧠💥
+Projectile.xSpeed = 0
+Projectile.zSpeed = 0
+
+Player = MovableLua:new()
+Player.speed = 0.5
+Player.health = 100
+
+Enemy = MovableLua:new()
+Enemy.speed = 0.5
+Enemy.health = 100
+Enemy.requiredToShoot = 200
+
+function Enemy:update(playerVar)
+	--print(playerVar.position.X)
+	local x, y, z = self:getPosition()
+	local xPlr, yPlr, zPlr = playerVar:getPosition()
+
+	self:move(math.random(-20,20)/100, 0, math.random(-20,20)/100)
+	local deltaX = xPlr - x
+	local deltaY = zPlr - z
+
+	local angle = math.atan(deltaX, deltaY)
+	self:setRotation(-(angle * 180)/math.pi)
 end
 
-local myPlayer = MovableLua.new()--PlayerClass.new(nil, 0, 0, 0, 1, 1, 1)
+myPlayer = Player:new()--PlayerClass.new(nil, 0, 0, 0, 1, 1, 1)
+myPlayer:init3DModel()
+
+myEnemy = Enemy:new()
+myEnemy:init3DModel()
+enemies[#enemies+1] = myEnemy
+
+--myPlayer:init3DModel()
+
+--local myEnemy = Enemy.new()--PlayerClass.new(nil, 0, 0, 0, 1, 1, 1)
+--myEnemy:init3DModel()
 --myPlayer.Health = 100
 
-bullets = {}
+
+
 w = false
 s = false
 a = false
@@ -79,33 +105,10 @@ d = false
 local shootDebounce = 0
 local requiredToShoot = 5
 
---[[Vector = {x = 0, y = 0, z = 0}
-VectorMeta = {__index = Vector}
-setmetatable(Vector, VectorMeta)
 
-function Vector3:new(v)
-	if not v then
-		v = {}
-	end
-
-	self.__index = self
-
-	setmetatable(v, self)
-
-	return v -- return instance
-end
-
-function Vector3:Length()
-{
-	return math.sqrt(self.x^2 + self.y^2 + self.z^2)
-}
-
-function Vector3:Normalize()
-	local length = self:Length()
-	return Vector3.new(self.x/length, self.y/length, self.z/length)
-end]]
 
 function update()
+	print("Collision: ", checkCollision(myEnemy.gameObject, myPlayer.gameObject))
 	local middleX = screenWidth/2
 	local middleY = screenHeight/2
 
@@ -135,13 +138,17 @@ function update()
 
 	if mouseButtonOne and shootDebounce >= requiredToShoot then
 
-		local xSpeed = math.sin(angle)
-		local zSpeed = math.cos(angle)
+		local xSpeed = math.sin(angle)*0.5
+		local zSpeed = math.cos(angle)*0.5
 
 		xPos, yPos, zPos = myPlayer:getPosition()
 		
-		bullet = Projectile.new(xPos, yPos, zPos, xSpeed, zSpeed)
+		local bullet = Projectile:new()
+		bullet:init3DModel()
 		bullet:setScale(0.5, 0.5, 0.5)
+		bullet:setPosition(xPos, yPos, zPos)
+		bullet.xSpeed = xSpeed
+		bullet.zSpeed = zSpeed
 
 		table.insert(bullets, bullet)
 		shootDebounce = 0
@@ -151,6 +158,10 @@ function update()
 		local xSpeed = v.xSpeed
 		local zSpeed = v.zSpeed
 		v:move(xSpeed, 0, zSpeed)
+	end
+
+	for i,v in pairs(enemies) do
+		v:update(myPlayer)
 	end
 
 	local x, y, z = myPlayer:getPosition()

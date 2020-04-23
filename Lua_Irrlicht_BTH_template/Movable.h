@@ -20,8 +20,9 @@ class Movable
 
 private:
 
-	irr::scene::IAnimatedMeshSceneNode* modelNode;
+	
 public:
+	irr::scene::IAnimatedMeshSceneNode* modelNode;
 	static IrrlichtDevice* device;
 	static irr::scene::IAnimatedMesh* mesh;
 
@@ -33,6 +34,8 @@ public:
 	static int Movable_SetRotation(lua_State* state);
 	static int Movable_SetScale(lua_State* state);
 	static int Movable_GetPosition(lua_State* state);
+	static int Movable_GetScale(lua_State* state);
+
 
 	static Movable* checkMovable(lua_State* state, int stackIndex);
 
