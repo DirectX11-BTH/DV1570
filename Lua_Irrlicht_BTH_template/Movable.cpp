@@ -10,7 +10,7 @@ Movable::Movable()
 {
 
 	modelNode = device->getSceneManager()->addAnimatedMeshSceneNode(mesh);
-	mesh->setBoundingBox(core::aabbox3df(-3.f,-3.f,-3.f,3.f,3.f,3.f));
+	//mesh->setBoundingBox(core::aabbox3df(-3.f,-3.f,-3.f,3.f,3.f,3.f));
 }
 
 int Movable::Movable_New(lua_State* state)
@@ -73,10 +73,10 @@ int Movable::Movable_SetPosition(lua_State* state)
 int Movable::Movable_Delete(lua_State* state)
 {
 	Movable* movable = checkMovable(state, 1);
-
+	movable->modelNode->remove();
 	delete movable;
 
-	cout << "Deleted Movable" << endl;
+	//cout << "Deleted Movable" << endl;
 
 	return 0;
 }

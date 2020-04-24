@@ -1,4 +1,5 @@
 ﻿bullets = {}
+enemyBullets = {}
 enemies = {}
 
 MovableLua = {
@@ -56,7 +57,7 @@ function MovableLua:init3DModel()
 end
 --------------------------------------------------------------------
 
-Projectile = MovableLua:new() -- this is how you do inheritance 💥🧠💥
+Projectile = MovableLua:new() -- this is how you do inheritance 💥🧠💥  
 Projectile.xSpeed = 0
 Projectile.zSpeed = 0
 
@@ -67,10 +68,10 @@ Player.health = 100
 Enemy = MovableLua:new()
 Enemy.speed = 0.5
 Enemy.health = 100
-Enemy.requiredToShoot = 200
+Enemy.shootDebounce = 0
+Enemy.requiredToShoot = 10
 
 function Enemy:update(playerVar)
-	--print(playerVar.position.X)
 	local x, y, z = self:getPosition()
 	local xPlr, yPlr, zPlr = playerVar:getPosition()
 
@@ -80,22 +81,42 @@ function Enemy:update(playerVar)
 
 	local angle = math.atan(deltaX, deltaY)
 	self:setRotation(-(angle * 180)/math.pi)
+
+	--self.shootDebounce = 0
+	--print(self.shootDebounce)
+	if self.shootDebounce >= self.requiredToShoot then
+		local bullet = Projectile:new()
+		bullet:init3DModel()
+		bullet:setScale(0.5, 0.5, 0.5)
+		bullet:setPosition(x, y, z)
+		local xSpeed = math.sin(angle)*0.1
+		local zSpeed = math.cos(angle)*0.1
+		bullet.xSpeed = xSpeed
+		bullet.zSpeed = zSpeed
+		self.shootDebounce = 0
+
+		if #enemyBullets >= 20 then -- removes bullets if too many
+			
+			table.remove(enemyBullets, 1)
+		end
+
+		table.insert(enemyBullets, bullet)
+	end
 end
 
 myPlayer = Player:new()--PlayerClass.new(nil, 0, 0, 0, 1, 1, 1)
 myPlayer:init3DModel()
 
-myEnemy = Enemy:new()
-myEnemy:init3DModel()
-enemies[#enemies+1] = myEnemy
-
---myPlayer:init3DModel()
-
---local myEnemy = Enemy.new()--PlayerClass.new(nil, 0, 0, 0, 1, 1, 1)
---myEnemy:init3DModel()
---myPlayer.Health = 100
-
-
+function initEnemies()
+	for i = 1,10 do
+		local myEnemy = Enemy:new()
+		myEnemy:init3DModel() 
+		myEnemy:setPosition(5,0,5)
+		myEnemy.shootDebounce = math.random(0,10)
+		enemies[#enemies+1] = myEnemy
+	end
+end
+initEnemies()
 
 w = false
 s = false
@@ -105,10 +126,34 @@ d = false
 local shootDebounce = 0
 local requiredToShoot = 5
 
+function handleBulletCollisions()
+	for i,bulletObject in pairs(bullets) do
+		for _,enemyObject in pairs (enemies) do
+			collision = checkCollision(bulletObject.gameObject, enemyObject.gameObject)
+			local x,y,z = enemyObject:getPosition()
 
+			if collision then 
+				enemyObject.health = enemyObject.health - 10
+		
+				table.remove(bullets, i)
+			end
+		end
+	end
+
+	for i,bulletObject in pairs(enemyBullets) do
+		collision = checkCollision(bulletObject.gameObject, myPlayer.gameObject)
+		local x,y,z = myPlayer:getPosition()
+
+		if collision then 
+			myPlayer.health = myPlayer.health - 10
+
+			table.remove(enemyBullets, i)
+		end
+	end
+end
 
 function update()
-	print("Collision: ", checkCollision(myEnemy.gameObject, myPlayer.gameObject))
+	--print("Collision: ", checkCollision(myEnemy.gameObject, myPlayer.gameObject))
 	local middleX = screenWidth/2
 	local middleY = screenHeight/2
 
@@ -118,18 +163,18 @@ function update()
 	myPlayer:setRotation(-(angle * 180)/math.pi)
 
 	if w then
-		myPlayer:move(0, 0, 0.03)
+		myPlayer:move(0, 0, 0.06)
 	end
 	if s then
-		myPlayer:move(0, 0, -0.03)
+		myPlayer:move(0, 0, -0.06)
 	end
 
 	if a then
-		myPlayer:move(0.03, 0, 0)
+		myPlayer:move(0.06, 0, 0)
 	end
 
 	if d then
-		myPlayer:move(-0.03, 0, 0)
+		myPlayer:move(-0.06, 0, 0)
 	end
 
 	--if space then
@@ -152,6 +197,11 @@ function update()
 
 		table.insert(bullets, bullet)
 		shootDebounce = 0
+
+		if #bullets >= 20 then -- removes bullets if too many
+			
+			table.remove(bullets, 1)
+		end
 	end
 
 	for i,v in pairs(bullets) do -- v is the bullet in the array
@@ -160,8 +210,18 @@ function update()
 		v:move(xSpeed, 0, zSpeed)
 	end
 
+	for i,v in pairs(enemyBullets) do -- v is the bullet in the array
+		local xSpeed = v.xSpeed
+		local zSpeed = v.zSpeed
+		v:move(xSpeed, 0, zSpeed)
+	end
+
 	for i,v in pairs(enemies) do
-		v:update(myPlayer)
+		if v.health > 0 then
+			v:update(myPlayer)
+		else
+			table.remove(enemies, i)
+		end
 	end
 
 	local x, y, z = myPlayer:getPosition()
@@ -171,4 +231,12 @@ function update()
 		shootDebounce = shootDebounce + 0.05
 	end
 
+	for _,enemy in pairs(enemies) do
+		if enemy.shootDebounce < enemy.requiredToShoot then
+			enemy.shootDebounce = enemy.shootDebounce + 0.05
+		end
+	end
+
+	handleBulletCollisions()
+	collectgarbage("collect")
 end

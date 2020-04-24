@@ -69,6 +69,8 @@ int checkCollision(lua_State* state)
 	return 1;
 }
 
+
+
 int setCameraPos(lua_State* luaState)
 {
 	if (lua_isnumber(luaState, -1) && lua_isnumber(luaState, -2) && lua_isnumber(luaState, -3))
