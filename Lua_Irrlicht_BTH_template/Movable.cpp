@@ -3,39 +3,73 @@
 #include <assert.h>
 #include <aabbox3d.h>
 IrrlichtDevice* Movable::device = nullptr;
-scene::IAnimatedMesh* Movable::mesh = nullptr;
+unordered_map<std::string, irr::scene::IAnimatedMesh*>* Movable::meshDictionary = new unordered_map<std::string, irr::scene::IAnimatedMesh*>;
 
+void DumpStack(lua_State* L)
+{
+	std::cout << "------- STACK DUMP -------\n";
+	for (int i = lua_gettop(L); i > 0; i--)
+	{
+		std::cout << "Index " << i << ": " << lua_typename(L, lua_type(L, i)) << "\n";
+	}
+	std::cout << "--------------------------\n";
+}
 
 Movable::Movable()
 {
 
-	modelNode = device->getSceneManager()->addAnimatedMeshSceneNode(mesh);
+	
 	//mesh->setBoundingBox(core::aabbox3df(-3.f,-3.f,-3.f,3.f,3.f,3.f));
 }
 
 int Movable::Movable_New(lua_State* state)
 {
 	//Constructor in lua: Movable(name)
-	if (lua_isnumber(state, -1) && lua_isnumber(state, -2) && lua_isnumber(state, -3))
+	if (lua_isnumber(state, -2) && lua_isnumber(state, -3) && lua_isnumber(state, -4) && lua_isstring(state, -1))
 	{
 		//x y z, Sx, Sy, Sz, s standing for scaling
-		float Sx = lua_tonumber(state, -1);
-		float Sy = lua_tonumber(state, -2);
-		float Sz = lua_tonumber(state, -3);
+		std::string path = lua_tostring(state, -1);
+		float Sx = lua_tonumber(state, -2);
+		float Sy = lua_tonumber(state, -3);
+		float Sz = lua_tonumber(state, -4);
 
-		lua_pop(state, 3);
+		lua_pop(state, 4);
 
 		Movable** movable = reinterpret_cast<Movable**>(lua_newuserdata(state, sizeof(Movable*)));
 		*movable = new Movable();
+
+		
+		io::path filename(path.data());
+		auto found = meshDictionary->find(path);
+		if (found == meshDictionary->end()) //If not found in the table
+		{
+			auto mesh = device->getSceneManager()->getMesh(filename); //Add it
+			meshDictionary->insert(make_pair(path, mesh));
+
+			(*movable)->modelNode = device->getSceneManager()->addAnimatedMeshSceneNode(mesh);
+
+			//(*movable)->mesh = 
+		}
+		else
+		{
+			(*movable)->modelNode = device->getSceneManager()->addAnimatedMeshSceneNode(found->second); //Use already existing value (mesh)
+		}
+		assert((*movable)->modelNode != nullptr);
+			
+		
 		(*movable)->modelNode->setScale(core::vector3df(Sx, Sy, Sz));
 
 		luaL_getmetatable(state, "MetaMovable"); // Pushes onto the stack, the metatable associat the name in the registry
 		lua_setmetatable(state, -2); // Pops a table from the stack and sets it as the new metatable for the value at the given index
 
+		//std::cout << "HEALTHY STACK: " << std::endl;
+		//DumpStack(state);
 	}
 	else
 	{
 		std::cout << "Error in movable, not correct amount of numbers in init." << std::endl;
+		std::cout << "Stack count: " << lua_gettop(state) << "\tExpected is 2." << std::endl;
+		DumpStack(state);
 	}
 	return 1; //Nr of args pushed to the stack
 }
@@ -162,6 +196,4 @@ void Movable::initClass(IrrlichtDevice* device, lua_State* state)
 {
 	Movable::registerLuaCFunctions(state); //Registers functions for movable
 	Movable::device = device;
-	io::path filename("actualCube.obj");
-	Movable::mesh = device->getSceneManager()->getMesh(filename);
 }

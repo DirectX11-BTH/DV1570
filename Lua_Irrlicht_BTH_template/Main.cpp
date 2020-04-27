@@ -36,16 +36,6 @@ bool d = false;
 bool space = false;
 bool mouseButtonOne = false;
 
-void DumpStack(lua_State* L)
-{
-    std::cout << "------- STACK DUMP -------\n";
-    for(int i = lua_gettop(L); i > 0; i--)
-    {
-        std::cout << "Index " << i << ": " << lua_typename(L, lua_type(L, i)) << "\n";
-    }
-    std::cout << "--------------------------\n";
-}
-
 int checkCollision(lua_State* state)
 {
 	Movable* movable1 = Movable::checkMovable(state, -1);
@@ -54,7 +44,7 @@ int checkCollision(lua_State* state)
 	if (movable1 == nullptr || movable2 == nullptr)
 	{
 		std::cout << "ERROR, BOTH WERE NOT MOVABLES." << std::endl;
-		DumpStack(state);
+
 	}
 	bool collided = false;
 
@@ -62,7 +52,7 @@ int checkCollision(lua_State* state)
 	//collided = true;
 	auto boundingBox1 = movable1->modelNode->getTransformedBoundingBox();
 	auto boundingBox2 = movable2->modelNode->getTransformedBoundingBox();
-	if (boundingBox1.intersectsWithBox(boundingBox2))
+	if (boundingBox1.intersectsWithBox(boundingBox2) && (movable1->modelNode->getPosition() != core::vector3df(0, 0, 0)) && (movable2->modelNode->getPosition() != core::vector3df(0, 0, 0)))
 		collided = true;
 	
 	lua_pushboolean(state, collided);
@@ -213,16 +203,7 @@ int main()
 		node->setTriangleSelector(selector);
 	}
 
-	
 
-	//scene::ISceneNodeAnimator* animator = smgr->createCollisionResponseAnimator(selector,
-	//test,							// the object to detect collision
-	//core::vector3df(30,50,30),	 //how big the object is),
-	//core::vector3df(0,0,0),		// direction and speed of gratity
-	//core::vector3df(0,0,0));		//translation
-	//selector->drop();
-	
-	//node->setDebugDataVisible(1);
 	node->setScale(core::vector3df(10, 1, 10));
 	node->setMaterialFlag(EMF_LIGHTING, true);
 
@@ -230,7 +211,7 @@ int main()
 	test->setBoundingBox(core::aabbox3df(-3.f,-3.f,-3.f,3.f,3.f,3.f));
 	smgr->addCameraSceneNode(0, vector3df(0, 25, 0), vector3df(0, 0, 0));
 
-	//scene::ILightSceneNode* light = smgr->addLightSceneNode(0, core::vector3df(0, 25, 0), video::SColor(0.5f, 0.5f, 0.5f, 0.0f), 40.f);
+	scene::ILightSceneNode* light = smgr->addLightSceneNode(0, core::vector3df(0, 25, 0), video::SColor(0.5f, 0.5f, 0.5f, 0.0f), 40.f);
 	//light->setDebugDataVisible(scene::EDS_BBOX);
 
 

@@ -10,6 +10,7 @@
 #include <lua.hpp>
 #include "lua.hpp"
 #include <string>
+#include <unordered_map>
 //using namespace scene;
 using namespace irr;
 using namespace std;
@@ -20,11 +21,11 @@ class Movable
 
 private:
 
-	
 public:
 	irr::scene::IAnimatedMeshSceneNode* modelNode;
+	irr::scene::IAnimatedMesh* mesh;
 	static IrrlichtDevice* device;
-	static irr::scene::IAnimatedMesh* mesh;
+	static unordered_map<std::string, irr::scene::IAnimatedMesh*>* meshDictionary;
 
 	Movable();
 

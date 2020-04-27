@@ -1,6 +1,8 @@
 ﻿bullets = {}
 enemyBullets = {}
 enemies = {}
+speedDropTable = {}
+heartDropTable = {}
 
 MovableLua = {
 	position = {x = 0, y = 0, z = 0},
@@ -52,14 +54,31 @@ function MovableLua:new(table)
 	return t
 end
 
-function MovableLua:init3DModel()
-	self.gameObject = Movable:new(3,1,1) -- lua class is called Movable and is registered as so, takes scale
+function MovableLua:init3DModel(path, sx, sy, sz)
+	if not path then
+		path = "actualCube.obj"
+	end
+
+	sx = sx or 1
+	sy = sy or 1
+	sz = sz or 1
+
+	--print("INIT 3D MODEL", path, sx, sy, sz)
+	
+	self.gameObject = Movable:new(sx, sy, sz, path) -- lua class is called Movable and is registered as so, takes scale
+
 end
 --------------------------------------------------------------------
+--debug obj's
+--12272_Koala_v1_L3.obj
+--Heart.obj
 
 Projectile = MovableLua:new() -- this is how you do inheritance 💥🧠💥  
 Projectile.xSpeed = 0
 Projectile.zSpeed = 0
+
+SpeedDrop = MovableLua:new()
+HeartDrop = MovableLua:new()
 
 Player = MovableLua:new()
 Player.speed = 0.5
@@ -67,7 +86,7 @@ Player.health = 100
 
 Enemy = MovableLua:new()
 Enemy.speed = 0.5
-Enemy.health = 100
+Enemy.health = 5
 Enemy.shootDebounce = 0
 Enemy.requiredToShoot = 10
 
@@ -86,7 +105,7 @@ function Enemy:update(playerVar)
 	--print(self.shootDebounce)
 	if self.shootDebounce >= self.requiredToShoot then
 		local bullet = Projectile:new()
-		bullet:init3DModel()
+		bullet:init3DModel("actualCube.obj")
 		bullet:setScale(0.5, 0.5, 0.5)
 		bullet:setPosition(x, y, z)
 		local xSpeed = math.sin(angle)*0.1
@@ -104,13 +123,29 @@ function Enemy:update(playerVar)
 	end
 end
 
+function Enemy:dropItems()
+	local speedDrop = SpeedDrop:new()
+	speedDrop:init3DModel("actualCube.obj") 
+	speedDrop:setScale(0.5, 0.5, 0.5)
+	speedDrop:setPosition(self.position.x, self.position.y, self.position.z)
+	table.insert(speedDropTable, speedDrop)
+
+
+	local heartDrop = HeartDrop:new()
+	heartDrop:init3DModel("actualCube.obj")
+	heartDrop:setScale(0.5, 0.5, 0.5)
+	heartDrop:setPosition(self.position.x + math.random(-40,40)/10, self.position.y, self.position.z + math.random(-40,40)/10)
+	table.insert(heartDropTable, heartDrop)
+end
+
 myPlayer = Player:new()--PlayerClass.new(nil, 0, 0, 0, 1, 1, 1)
 myPlayer:init3DModel()
+myPlayer:setPosition(0,0,0)
 
 function initEnemies()
-	for i = 1,10 do
+	for i = 1,2 do
 		local myEnemy = Enemy:new()
-		myEnemy:init3DModel() 
+		myEnemy:init3DModel("actualCube.obj") 
 		myEnemy:setPosition(5,0,5)
 		myEnemy.shootDebounce = math.random(0,10)
 		enemies[#enemies+1] = myEnemy
@@ -189,7 +224,7 @@ function update()
 		xPos, yPos, zPos = myPlayer:getPosition()
 		
 		local bullet = Projectile:new()
-		bullet:init3DModel()
+		bullet:init3DModel("actualCube.obj")
 		bullet:setScale(0.5, 0.5, 0.5)
 		bullet:setPosition(xPos, yPos, zPos)
 		bullet.xSpeed = xSpeed
@@ -216,13 +251,15 @@ function update()
 		v:move(xSpeed, 0, zSpeed)
 	end
 
-	for i,v in pairs(enemies) do
+	for i,v in pairs(enemies) do -- update all enemies
 		if v.health > 0 then
 			v:update(myPlayer)
-		else
+		else -- enemy died
+			v:dropItems()
 			table.remove(enemies, i)
 		end
 	end
+
 
 	local x, y, z = myPlayer:getPosition()
 	setCameraPos(x, 25, z)
@@ -230,6 +267,24 @@ function update()
 	if shootDebounce < requiredToShoot then
 		shootDebounce = shootDebounce + 0.05
 	end
+
+	--print(#speedDropTable)
+	for i,v in pairs(speedDropTable) do
+		local collided = checkCollision(v.gameObject, myPlayer.gameObject)
+		if collided then
+			myPlayer.speed = myPlayer.speed + 1
+			table.remove(speedDropTable, i)
+			print("REMOVED", i, "Remaining:", #speedDropTable)
+		end
+	end
+
+	for i,v in pairs(heartDropTable) do
+		if checkCollision(v.gameObject, myPlayer.gameObject) then
+			myPlayer.health = myPlayer.health + 10
+			table.remove(heartDropTable, i)
+		end
+	end
+
 
 	for _,enemy in pairs(enemies) do
 		if enemy.shootDebounce < enemy.requiredToShoot then
