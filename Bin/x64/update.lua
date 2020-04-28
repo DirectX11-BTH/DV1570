@@ -1,8 +1,12 @@
-﻿bullets = {}
+﻿
+bullets = {}
 enemyBullets = {}
 enemies = {}
 speedDropTable = {}
 heartDropTable = {}
+
+respawnTimer = 0
+spawnWhenTimerEquals = 100
 
 MovableLua = {
 	position = {x = 0, y = 0, z = 0},
@@ -22,8 +26,6 @@ end
 function MovableLua:getRotation()
 	return self.gameObject:getRotation()
 end
-
-
 
 function MovableLua:setRotation(yaw)
 	self.gameObject:setRotation(yaw)
@@ -83,18 +85,73 @@ HeartDrop = MovableLua:new()
 Player = MovableLua:new()
 Player.speed = 0.5
 Player.health = 100
+Player.selectedWeapon = "AUTO"
+Player.damage = 100
+Player.shootDebounce = 0
+Player.requiredToShoot = 5
+
+myPlayer = Player:new()--PlayerClass.new(nil, 0, 0, 0, 1, 1, 1)
+myPlayer:init3DModel()
+myPlayer:setPosition(0,0,0)
+
+function Player:handleCheckWeapon()
+
+	if one then
+	--switch weapon
+		self.selectedWeapon = "AUTO"
+		self.damage = 100
+		self.requiredToShoot = 5
+	
+	elseif two then
+	--switch weapon
+		self.selectedWeapon = "SHOTGUN"
+		self.damage = 40
+		self.requiredToShoot = 9
+	elseif three then
+	--switch weapon
+		self.selectedWeapon = "SNIPER"
+		self.requiredToShoot = 20
+		self.damage = 5000
+	end
+
+end
+
+
 
 Enemy = MovableLua:new()
 Enemy.speed = 0.5
 Enemy.health = 5
 Enemy.shootDebounce = 0
 Enemy.requiredToShoot = 10
+Enemy.walkToX = 0
+Enemy.walkToZ = 0
 
 function Enemy:update(playerVar)
 	local x, y, z = self:getPosition()
+	
 	local xPlr, yPlr, zPlr = playerVar:getPosition()
 
-	self:move(math.random(-20,20)/100, 0, math.random(-20,20)/100)
+	if self.walkToX == nil or self.walkToZ == nil or (math.abs(x - self.walkToX) < 2 and math.abs(z - self.walkToZ) < 2) then
+		self.walkToX = math.random(-10,10)
+		self.walkToZ = math.random(-10,10)
+
+	end
+
+
+	--print("DELTA", math.floor(math.abs(x - self.walkToX)), math.floor(math.abs(y - self.walkToZ)), "TARGET", math.floor(self.walkToX), math.floor(self.walkToZ), "POS", math.floor(x), math.floor(y))
+
+	if self.walkToX > x then
+		self:move(0.02, 0, 0)
+	else
+		self:move(-0.02, 0, 0)
+	end
+
+	if self.walkToZ > z then
+		self:move(0, 0, 0.02)
+	else
+		self:move(0, 0, -0.02)
+	end
+
 	local deltaX = xPlr - x
 	local deltaY = zPlr - z
 
@@ -124,26 +181,25 @@ function Enemy:update(playerVar)
 end
 
 function Enemy:dropItems()
-	local speedDrop = SpeedDrop:new()
-	speedDrop:init3DModel("actualCube.obj") 
-	speedDrop:setScale(0.5, 0.5, 0.5)
-	speedDrop:setPosition(self.position.x, self.position.y, self.position.z)
-	table.insert(speedDropTable, speedDrop)
+	if math.random(1,2) == 1 then
+
+		local speedDrop = SpeedDrop:new()
+		speedDrop:init3DModel("actualCube.obj") 
+		speedDrop:setScale(0.5, 0.5, 0.5)
+		speedDrop:setPosition(self.position.x, self.position.y, self.position.z)
+		table.insert(speedDropTable, speedDrop)
 
 
-	local heartDrop = HeartDrop:new()
-	heartDrop:init3DModel("actualCube.obj")
-	heartDrop:setScale(0.5, 0.5, 0.5)
-	heartDrop:setPosition(self.position.x + math.random(-40,40)/10, self.position.y, self.position.z + math.random(-40,40)/10)
-	table.insert(heartDropTable, heartDrop)
+		local heartDrop = HeartDrop:new()
+		heartDrop:init3DModel("actualCube.obj")
+		heartDrop:setScale(0.5, 0.5, 0.5)
+		heartDrop:setPosition(self.position.x + (math.random(-2,2)), self.position.y, self.position.z + (math.random(-2,2)))
+		table.insert(heartDropTable, heartDrop)
+	end
 end
 
-myPlayer = Player:new()--PlayerClass.new(nil, 0, 0, 0, 1, 1, 1)
-myPlayer:init3DModel()
-myPlayer:setPosition(0,0,0)
-
 function initEnemies()
-	for i = 1,2 do
+	for i = 1,1 do
 		local myEnemy = Enemy:new()
 		myEnemy:init3DModel("actualCube.obj") 
 		myEnemy:setPosition(5,0,5)
@@ -153,22 +209,24 @@ function initEnemies()
 end
 initEnemies()
 
-w = false
+w = false -- not needed to be reset, kept for visibility
 s = false
 a = false
 d = false
 
-local shootDebounce = 0
-local requiredToShoot = 5
+--one = false
+--two = false
+--three = false
 
 function handleBulletCollisions()
 	for i,bulletObject in pairs(bullets) do
 		for _,enemyObject in pairs (enemies) do
 			collision = checkCollision(bulletObject.gameObject, enemyObject.gameObject)
 			local x,y,z = enemyObject:getPosition()
+			local bX, bY, bZ = bulletObject:getPosition()
 
-			if collision then 
-				enemyObject.health = enemyObject.health - 10
+			if collision and bX ~= 0 and bZ ~= 0 then 
+				enemyObject.health = enemyObject.health - myPlayer.damage
 		
 				table.remove(bullets, i)
 			end
@@ -216,22 +274,51 @@ function update()
 		
 	--end
 
-	if mouseButtonOne and shootDebounce >= requiredToShoot then
+	--print("MOSUE:",mouseButtonOne, "debouce:", myPlayer.shootDebounce, "Can shoot?", myPlayer.shootDebounce>=myPlayer.requiredToShoot)
+	if mouseButtonOne and myPlayer.shootDebounce >= myPlayer.requiredToShoot then
 
 		local xSpeed = math.sin(angle)*0.5
 		local zSpeed = math.cos(angle)*0.5
 
 		xPos, yPos, zPos = myPlayer:getPosition()
 		
-		local bullet = Projectile:new()
-		bullet:init3DModel("actualCube.obj")
-		bullet:setScale(0.5, 0.5, 0.5)
-		bullet:setPosition(xPos, yPos, zPos)
-		bullet.xSpeed = xSpeed
-		bullet.zSpeed = zSpeed
+		if myPlayer.selectedWeapon == "AUTO" then
+			local bullet = Projectile:new()
+			bullet:init3DModel("actualCube.obj")
+			bullet:setScale(0.5, 0.5, 0.5)
+			bullet:setPosition(xPos, yPos, zPos)
+			bullet.xSpeed = xSpeed
+			bullet.zSpeed = zSpeed
 
-		table.insert(bullets, bullet)
-		shootDebounce = 0
+			table.insert(bullets, bullet)
+			myPlayer.shootDebounce = 0
+		end
+
+		if myPlayer.selectedWeapon == "SHOTGUN" then
+			for i = 1,5 do
+				local bullet = Projectile:new()
+				bullet:init3DModel("actualCube.obj")
+				bullet:setScale(0.5, 0.5, 0.5)
+				bullet:setPosition(xPos, yPos, zPos)
+				bullet.xSpeed = xSpeed*0.6  + (math.random(-7,7)/100)
+				bullet.zSpeed = zSpeed*0.6 + (math.random(-7,7)/100)
+
+				table.insert(bullets, bullet)
+				myPlayer.shootDebounce = 0
+			end
+		end
+
+		if myPlayer.selectedWeapon == "SNIPER" then
+			local bullet = Projectile:new()
+			bullet:init3DModel("actualCube.obj")
+			bullet:setScale(0.2, 0.2, 0.2)
+			bullet:setPosition(xPos, yPos, zPos)
+			bullet.xSpeed = xSpeed
+			bullet.zSpeed = zSpeed
+
+			table.insert(bullets, bullet)
+			myPlayer.shootDebounce = 0
+		end
 
 		if #bullets >= 20 then -- removes bullets if too many
 			
@@ -264,8 +351,8 @@ function update()
 	local x, y, z = myPlayer:getPosition()
 	setCameraPos(x, 25, z)
 
-	if shootDebounce < requiredToShoot then
-		shootDebounce = shootDebounce + 0.05
+	if myPlayer.shootDebounce < myPlayer.requiredToShoot then
+		myPlayer.shootDebounce = myPlayer.shootDebounce + 0.05
 	end
 
 	--print(#speedDropTable)
@@ -292,6 +379,18 @@ function update()
 		end
 	end
 
+	setText("Health: ".. myPlayer.health .. "\nSpeed: "..myPlayer.speed.. "\nWeapon Selected: "..myPlayer.selectedWeapon)
+	myPlayer:handleCheckWeapon()
+
 	handleBulletCollisions()
 	collectgarbage("collect")
+
+	respawnTimer = respawnTimer + 0.1
+	if respawnTimer >= spawnWhenTimerEquals then
+		local enemy = Enemy:new()
+		enemy:init3DModel()
+		enemy:setPosition(math.random(-10,10), 0, math.random(-10,10))
+		table.insert(enemies, enemy)
+	respawnTimer = 0
+	end
 end

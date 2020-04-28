@@ -1,4 +1,4 @@
-#pragma comment(lib, "Irrlicht.lib")
+﻿#pragma comment(lib, "Irrlicht.lib")
 #ifdef _DEBUG
 #pragma comment(lib, "LuaLibd.lib")
 #else
@@ -13,6 +13,8 @@
 #include <irrlicht.h>
 #include "Movable.h"
 #include "EventReceiver.h"
+#include <string>
+#include <algorithm>
 
 //#include "Vector3Lua.h"
 
@@ -33,8 +35,12 @@ bool w = false;
 bool a = false;
 bool s = false;
 bool d = false;
+bool one = false;
+bool two = false;
+bool three = false;
 bool space = false;
 bool mouseButtonOne = false;
+wstring displayString = L"";
 
 int checkCollision(lua_State* state)
 {
@@ -78,6 +84,34 @@ int setCameraPos(lua_State* luaState)
 	return 0;
 }
 
+int setText(lua_State* luaState)
+{
+	if (lua_isstring(luaState, -1))
+	{
+		std::string textString = lua_tostring(luaState, -1);
+		//displayString = lua_tostring(luaState, -1);
+		//std::cout << displayString.data() << std::endl;
+
+		std::wstring tempString(textString.length(), L' ');
+		std::copy(textString.begin(), textString.end(), tempString.begin());
+
+		displayString = tempString;
+		
+		
+		/*wstring wideusername;
+		for(int i = 0; i < textString.length(); ++i)
+				wideusername += wchar_t( textString[i] );
+
+		const wchar_t* your_result = wideusername.c_str();*/
+		
+
+
+		lua_pop(luaState, 1);
+	}
+
+	return 0;
+}
+
 void pushKeysToLua(float mouseX, float mouseY)
 {
 	//lua_getglobal(luaState, "w");
@@ -106,6 +140,15 @@ void pushKeysToLua(float mouseX, float mouseY)
 
 	lua_pushnumber(luaState, mouseX);
 	lua_setglobal(luaState, "mouseX");
+
+	lua_pushboolean(luaState, one);
+	lua_setglobal(luaState, "one");
+
+	lua_pushboolean(luaState, two);
+	lua_setglobal(luaState, "two");
+
+	lua_pushboolean(luaState, three);
+	lua_setglobal(luaState, "three");
 }
 
 void checkKeys()
@@ -114,8 +157,12 @@ void checkKeys()
 	s = false;
 	d = false;
 	a = false;
+	one = false;
+	two = false;
+	three = false;
 	space = false;
 	mouseButtonOne = false;
+
 
 	if (GetAsyncKeyState(KEY_KEY_W))
 	{
@@ -141,6 +188,22 @@ void checkKeys()
 	{
 		space = true;
 	}
+
+	if (GetAsyncKeyState(KEY_KEY_1))
+	{
+		one = true;
+	}
+
+	if (GetAsyncKeyState(KEY_KEY_2))
+	{
+		two = true;
+	}
+
+	if (GetAsyncKeyState(KEY_KEY_3))
+	{
+		three = true;
+	}
+	
 }
 
 void ConsoleThread(lua_State* luaState)
@@ -150,6 +213,9 @@ void ConsoleThread(lua_State* luaState)
 
 	lua_pushcfunction(luaState, checkCollision);
 	lua_setglobal(luaState, "checkCollision");
+
+	lua_pushcfunction(luaState, setText);
+	lua_setglobal(luaState, "setText");
 
 	char command[1000];
 	while (GetConsoleWindow())
@@ -179,7 +245,17 @@ int main()
 	video::IVideoDriver* driver = device->getVideoDriver();
 	smgr = device->getSceneManager();
 	gui::IGUIEnvironment* guienv = device->getGUIEnvironment();
-	
+	//IGUIStaticText* textPtr = guienv->addStaticText(L"Hello World! This is the Irrlicht Software renderer!", core::rect<s32>(10, 10, 300, 55), true, true, 0, -1, true);
+	//textPtr->font
+	IGUISkin* skin = guienv->getSkin();
+	gui::IGUIFont* font2 = device->getGUIEnvironment()->getFont("myfont.xml");
+	skin->setFont(font2);
+	driver->getMaterial2D().TextureLayer[0].BilinearFilter=true;
+    driver->getMaterial2D().AntiAliasing=video::EAAM_FULL_BASIC;
+
+
+	//biggerFont->
+	//guienv->addStaticText(L"Test", true, rect<int>(10,10,200,30));
 
 	luaState = luaL_newstate();
 	luaL_openlibs(luaState);
@@ -223,7 +299,7 @@ int main()
 		checkKeys();
 		pushKeysToLua(receiver.GetMouseState().Position.X, receiver.GetMouseState().Position.Y);
 
-		//Separat skript som k�rs varje game loop - idk?
+		//Separat skript som körs varje game loop - idk?
 		//luaL_dofile("./update.lua");
 		
 		lua_getglobal(luaState, "update");
@@ -235,12 +311,15 @@ int main()
 			lua_pop(luaState, 1);
 		}
 
-
-
+		
 		driver->beginScene(true, true, video::SColor(255, 11, 11, 11));
 
 		smgr->drawAll();
 		guienv->drawAll();
+
+		font2->draw(displayString.data(),
+                core::rect<s32>(5,5,300,300),
+                video::SColor(255, 255,255,255));
 
 		driver->endScene();
 	}
