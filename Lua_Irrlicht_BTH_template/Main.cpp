@@ -240,7 +240,8 @@ int main()
 {
 
 	EventReceiver receiver;
-	IrrlichtDevice* device = createDevice(video::EDT_SOFTWARE, core::dimension2d<u32>(WIDTH, HEIGHT), 16, false, false, true, &receiver);
+	IrrlichtDevice* device = createDevice(video::EDT_DIRECT3D9, core::dimension2d<u32>(WIDTH, HEIGHT), 16, false, false, true, &receiver);
+	
 	device->setWindowCaption(L"Hello World! - Irrlicht Engine Demo");
 	video::IVideoDriver* driver = device->getVideoDriver();
 	smgr = device->getSceneManager();
@@ -252,8 +253,12 @@ int main()
 	skin->setFont(font2);
 	driver->getMaterial2D().TextureLayer[0].BilinearFilter=true;
     driver->getMaterial2D().AntiAliasing=video::EAAM_FULL_BASIC;
+	scene::ILightSceneNode* light = smgr->addLightSceneNode(0, core::vector3df(0, 25, 0), video::SColor(0.5f, 0.5f, 0.5f, 0.0f), 100.f);
+	video::SLight testSlight = light->getLightData();
 
-
+	//light->setLightData()
+	//driver->turnLightOn(0, false);
+	
 	//biggerFont->
 	//guienv->addStaticText(L"Test", true, rect<int>(10,10,200,30));
 
@@ -269,8 +274,10 @@ int main()
 
 	path filename("testQuad.obj");
 	scene::IAnimatedMesh* test = device->getSceneManager()->getMesh(filename);
-
 	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode(test);
+
+	node->setMaterialFlag(video::EMF_LIGHTING, false);
+	
 	// collision initialize
 	scene::ITriangleSelector* selector = 0;
 	if(node)
@@ -280,21 +287,19 @@ int main()
 	}
 
 
-	node->setScale(core::vector3df(10, 1, 10));
-	node->setMaterialFlag(EMF_LIGHTING, true);
+	node->setScale({ 100, 1, 100 });
 
 
 	test->setBoundingBox(core::aabbox3df(-3.f,-3.f,-3.f,3.f,3.f,3.f));
 	smgr->addCameraSceneNode(0, vector3df(0, 25, 0), vector3df(0, 0, 0));
 
-	scene::ILightSceneNode* light = smgr->addLightSceneNode(0, core::vector3df(0, 25, 0), video::SColor(0.5f, 0.5f, 0.5f, 0.0f), 40.f);
 	//light->setDebugDataVisible(scene::EDS_BBOX);
 
 
 	luaL_dofile(luaState, "./update.lua");
 	while (device->run())
 	{
-
+		std::cout << driver->getFPS()<< std::endl;
 		driver->enableClipPlane(0,false);
 		checkKeys();
 		pushKeysToLua(receiver.GetMouseState().Position.X, receiver.GetMouseState().Position.Y);

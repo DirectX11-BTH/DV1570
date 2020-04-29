@@ -58,7 +58,8 @@ int Movable::Movable_New(lua_State* state)
 			
 		
 		(*movable)->modelNode->setScale(core::vector3df(Sx, Sy, Sz));
-
+		(*movable)->modelNode->setPosition(core::vector3df(100, 100, 100));
+		(*movable)->modelNode->setMaterialFlag(video::EMF_LIGHTING, false);
 		luaL_getmetatable(state, "MetaMovable"); // Pushes onto the stack, the metatable associat the name in the registry
 		lua_setmetatable(state, -2); // Pops a table from the stack and sets it as the new metatable for the value at the given index
 

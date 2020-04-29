@@ -2,19 +2,19 @@
 C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(74,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
 C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(75,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
 C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(76,11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(290,120): warning C4244: 'argument': conversion from 'float' to 'irr::u32', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(290,114): warning C4244: 'argument': conversion from 'float' to 'irr::u32', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(290,108): warning C4244: 'argument': conversion from 'float' to 'irr::u32', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(290,102): warning C4244: 'argument': conversion from 'float' to 'irr::u32', possible loss of data
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(300,87): warning C4244: 'argument': conversion from 'const T' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(256,120): warning C4244: 'argument': conversion from 'float' to 'irr::u32', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(256,114): warning C4244: 'argument': conversion from 'float' to 'irr::u32', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(256,108): warning C4244: 'argument': conversion from 'float' to 'irr::u32', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(256,102): warning C4244: 'argument': conversion from 'float' to 'irr::u32', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(305,87): warning C4244: 'argument': conversion from 'const T' to 'float', possible loss of data
           with
           [
               T=irr::s32
           ]
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(300,50): warning C4244: 'argument': conversion from 'const T' to 'float', possible loss of data
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(305,50): warning C4244: 'argument': conversion from 'const T' to 'float', possible loss of data
           with
           [
               T=irr::s32
           ]
-C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(306,15): warning C4002: too many arguments for function-like macro invocation 'lua_pcall'
+C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Lua_Irrlicht_BTH_template\Main.cpp(311,15): warning C4002: too many arguments for function-like macro invocation 'lua_pcall'
   Lua_Irrlicht_BTH_template.vcxproj -> C:\Users\Chris\Desktop\Lua_Irrlicht_BTH_template - Copy\Bin/x64/Lua_Irrlicht_BTH_templateD.exe
