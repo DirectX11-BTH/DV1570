@@ -18,7 +18,7 @@ arenaSize = 40
 editMode = false
 reqToPlace = 10
 placeTimer = 0
-
+heightFromGround = (-0.95)
 MovableLua = {
 	position = {x = 0, y = 0, z = 0},
 	gameObject = nil
@@ -40,6 +40,11 @@ end
 
 function MovableLua:setRotation(yaw)
 	self.gameObject:setRotation(yaw)
+end
+
+
+function MovableLua:setBB(bb, text)
+	self.gameObject:setBB(bb, text)
 end
 
 function MovableLua:getPosition()
@@ -105,9 +110,9 @@ Player.shootDebounce = 0
 Player.requiredToShoot = 5
 
 myPlayer = Player:new()--PlayerClass.new(nil, 0, 0, 0, 1, 1, 1)
-myPlayer:init3DModel()
+myPlayer:init3DModel("testSphere.obj")
 myPlayer:setPosition(0,0,0)
-
+myPlayer:setScale(1,1,1)
 function Player:handleCheckWeapon()
 
 	if one then
@@ -173,19 +178,62 @@ function createArena()
 	table.insert(walls, wall4)
 
 	local startSpawn = Spawnpoint:new() -- default spawner, needed for logic
-	startSpawn:init3DModel("spawnCube.obj")
-	startSpawn:setPosition(10,0,10)
-	startSpawn:setScale(2,0.1,2)
+	startSpawn:init3DModel("spawnPoint.obj")
+	startSpawn:setPosition(10,heightFromGround,10)
+	startSpawn:setScale(2,1,2)
 	table.insert(spawnPoints, startSpawn)
 end
 
 	local startSpawn = Spawnpoint:new() -- default spawner, needed for logic
-	startSpawn:init3DModel("spawnCube.obj")
-	startSpawn:setPosition(10,0,10)
-	startSpawn:setScale(2,0.1,2)
+	startSpawn:init3DModel("spawnPoint.obj")
+	startSpawn:setPosition(10,heightFromGround,10)
+	startSpawn:setScale(2,1,2)
 	table.insert(spawnPoints, startSpawn)
 
+function readFile()
+local file = io.open("save.lua", "r")
+			io.input(file)
 
+			local nrOfSpawnPoints = io.read() 
+			print("Spawnpoints ".. nrOfSpawnPoints)
+			for i=1,nrOfSpawnPoints do
+				local x = io.read()
+				local z = io.read()
+				--print(x,z)
+				local startSpawn = Spawnpoint:new() -- default spawner
+				startSpawn:init3DModel("spawnPoint.obj")
+				startSpawn:setPosition(x,heightFromGround,z)
+				startSpawn:setScale(2,1,2)
+				table.insert(spawnPoints, startSpawn)
+			end
+			--READS OBSTACLES FROM FILE
+			local nrOfObstacles = io.read() 
+			for i=1,nrOfObstacles do
+				local x = io.read()
+				local z = io.read()
+				--print(x,z)
+				local obstacle = Obstacle:new() -- default obstacle
+				obstacle:init3DModel("obstacle.obj")
+				obstacle:setPosition(x,heightFromGround,z)
+				obstacle:setScale(2,1,2)
+				table.insert(obstacles, obstacle)
+			end
+			--READS WALLS FROM FILE
+			local nrOfWalls = io.read() 
+			for i=1,nrOfWalls do
+				local x = io.read()
+				local z = io.read()
+				--print(x,z)
+				local wall = Wall:new() -- default wall
+				wall:init3DModel("treeLua.obj")
+				wall:setPosition(x,0,z)
+				wall:setScale(1,1,1)
+				wall:setBB(1, "treeLua.obj")
+				table.insert(walls, wall)
+			end
+
+			io.close(file)
+end
 function Enemy:update(playerVar)
 	local x, y, z = self:getPosition()
 	
@@ -258,13 +306,13 @@ function Enemy:dropItems()
 end
 
 function initEnemies()
-	for i = 1,1 do
+	for i = 1,2 do
 		local myEnemy = Enemy:new()
-		myEnemy:init3DModel("actualCube.obj") 
+		myEnemy:init3DModel("ghost.obj") 
 		myEnemy:setScale(1,3,1)
 
 		local spawnX, spawnY, spawnZ = spawnPoints[math.random(#spawnPoints)]:getPosition()
-		myEnemy:setPosition(spawnX, spawnY, spawnZ)
+		myEnemy:setPosition(spawnX, 0, spawnZ)
 		myEnemy.shootDebounce = math.random(0,10)
 		enemies[#enemies+1] = myEnemy
 	end
@@ -309,6 +357,7 @@ function handleBulletCollisions()
 end
 
 createArena()
+readFile()
 function update()
 	setCameraPos(x, 25, z)
 	local middleX = screenWidth/2
@@ -497,22 +546,22 @@ function update()
 
 
 			if type == 1 then
-				enemy:init3DModel()
-				enemy:setScale(1,3,1)
+				enemy:init3DModel("ghost.obj")
+				enemy:setScale(1,1,1)
 			elseif type == 2 then
-				enemy:init3DModel("spawnCube.obj")
-				enemy:setScale(0.6,3,0.6)
+				enemy:init3DModel("ghostSmall.obj")
+				enemy:setScale((0.6),1,(0.6))
 				enemy.health = 60
 				enemy.requiredToShoot = Enemy.requiredToShoot-2
 			elseif type == 3 then
-				enemy:init3DModel("deathCube.obj")
-				enemy:setScale(1.5,3,1.5)
+				enemy:init3DModel("ghostBig.obj")
+				enemy:setScale(1.5,1.5,1.5)
 				enemy.requiredToShoot = Enemy.requiredToShoot-5
 				enemy.health = 130
 			end
 
 			local spawnX, spawnY, spawnZ = spawnPoints[math.random(#spawnPoints)]:getPosition()
-			enemy:setPosition(spawnX, spawnY, spawnZ)
+			enemy:setPosition(spawnX, 1, spawnZ)
 			table.insert(enemies, enemy)
 		respawnTimer = 0
 		end
@@ -640,7 +689,7 @@ function update()
 			placeTimer = 0
 			
 			local wall = Wall:new() -- top
-			wall:init3DModel()
+			wall:init3DModel("treeLua.obj")
 			wall:setPosition(x,0,z)
 			wall:setScale(3,1,3)
 			table.insert(walls, wall)
@@ -648,9 +697,9 @@ function update()
 		if mouseButtonTwo and (reqToPlace < placeTimer) then
 			placeTimer = 0
 			local obstacle = Obstacle:new() -- top
-			obstacle:init3DModel("deathCube.obj")
-			obstacle:setPosition(x,0,z)
-			obstacle:setScale(2,0.1,2)
+			obstacle:init3DModel("obstacle.obj")
+			obstacle:setPosition(x,heightFromGround,z)
+			obstacle:setScale(2,1,2)
 			table.insert(obstacles, obstacle)
 		end
 
@@ -658,9 +707,9 @@ function update()
 			placeTimer = 0
 			print("SPAWN POINT")
 			local spawner = Spawnpoint:new() -- top
-			spawner:init3DModel("spawnCube.obj")
-			spawner:setPosition(x,0,z)
-			spawner:setScale(2,0.1,2)
+			spawner:init3DModel("spawnPoint.obj")
+			spawner:setPosition(x,heightFromGround,z)
+			spawner:setScale(2,1,2)
 			table.insert(spawnPoints, spawner)
 		end
 
@@ -676,8 +725,8 @@ function update()
 
 			if #spawnPoints == 0 then
 				local startSpawn = Spawnpoint:new() -- default spawner, needed for logic
-				startSpawn:init3DModel("spawnCube.obj")
-				startSpawn:setPosition(10,0,10)
+				startSpawn:init3DModel("spawnPoint.obj")
+				startSpawn:setPosition(10,heightFromGround,10)
 				startSpawn:setScale(2,0.1,2)
 				table.insert(spawnPoints, startSpawn)	
 			end
@@ -699,9 +748,9 @@ function update()
 				local z = io.read()
 				--print(x,z)
 				local startSpawn = Spawnpoint:new() -- default spawner
-				startSpawn:init3DModel("spawnCube.obj")
-				startSpawn:setPosition(x,0,z)
-				startSpawn:setScale(2,0.1,2)
+				startSpawn:init3DModel("spawnPoint.obj")
+				startSpawn:setPosition(x,(-0.7),z)
+				startSpawn:setScale(2,1,2)
 				table.insert(spawnPoints, startSpawn)
 			end
 			--READS OBSTACLES FROM FILE
@@ -711,9 +760,9 @@ function update()
 				local z = io.read()
 				--print(x,z)
 				local obstacle = Obstacle:new() -- default obstacle
-				obstacle:init3DModel("deathCube.obj")
-				obstacle:setPosition(x,0,z)
-				obstacle:setScale(2,0.1,2)
+				obstacle:init3DModel("obstacle.obj")
+				obstacle:setPosition(x,(-0.7),z)
+				obstacle:setScale(2,1,2)
 				table.insert(obstacles, obstacle)
 			end
 			--READS WALLS FROM FILE
@@ -723,9 +772,10 @@ function update()
 				local z = io.read()
 				--print(x,z)
 				local wall = Wall:new() -- default wall
-				wall:init3DModel("actualCube.obj")
+				wall:init3DModel("treeLua.obj")
 				wall:setPosition(x,0,z)
 				wall:setScale(3,1,3)
+				wall:setBB(1,"treeLua.obj")
 				table.insert(walls, wall)
 			end
 

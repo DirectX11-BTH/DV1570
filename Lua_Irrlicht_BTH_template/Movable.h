@@ -22,10 +22,10 @@ class Movable
 private:
 
 public:
-	irr::scene::IAnimatedMeshSceneNode* modelNode;
-	irr::scene::IAnimatedMesh* mesh;
+	irr::scene::ISceneNode* modelNode;
+	irr::scene::IMesh* mesh;
 	static IrrlichtDevice* device;
-	static unordered_map<std::string, irr::scene::IAnimatedMesh*>* meshDictionary;
+	static unordered_map<std::string, irr::scene::IMesh*>* meshDictionary;
 
 	Movable();
 
@@ -36,7 +36,7 @@ public:
 	static int Movable_SetScale(lua_State* state);
 	static int Movable_GetPosition(lua_State* state);
 	static int Movable_GetScale(lua_State* state);
-
+	static int Movable_SetBB(lua_State* state);
 
 	static Movable* checkMovable(lua_State* state, int stackIndex);
 

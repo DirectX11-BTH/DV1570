@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <aabbox3d.h>
 IrrlichtDevice* Movable::device = nullptr;
-unordered_map<std::string, irr::scene::IAnimatedMesh*>* Movable::meshDictionary = new unordered_map<std::string, irr::scene::IAnimatedMesh*>;
+unordered_map<std::string, irr::scene::IMesh*>* Movable::meshDictionary = new unordered_map<std::string, irr::scene::IMesh*>;
 
 void DumpStack(lua_State* L)
 {
@@ -44,25 +44,24 @@ int Movable::Movable_New(lua_State* state)
 		if (found == meshDictionary->end()) //If not found in the table
 		{
 			auto mesh = device->getSceneManager()->getMesh(filename); //Add it
+			//mesh->setBoundingBox(setBoundingBox(core::aabbox3df(-3.f, -3.f, -3.f, 3.f, 3.f, 3.f));
 			meshDictionary->insert(make_pair(path, mesh));
-
-			(*movable)->modelNode = device->getSceneManager()->addAnimatedMeshSceneNode(mesh);
-
+			(*movable)->modelNode = device->getSceneManager()->addMeshSceneNode(mesh);
 			//(*movable)->mesh = 
 		}
 		else
 		{
-			(*movable)->modelNode = device->getSceneManager()->addAnimatedMeshSceneNode(found->second); //Use already existing value (mesh)
+			(*movable)->modelNode = device->getSceneManager()->addMeshSceneNode(found->second); //Use already existing value (mesh)
 		}
 		assert((*movable)->modelNode != nullptr);
-			
-		
+
+		//(*movable)->modelNode->addShadowVolumeSceneNode();
+		//smgr->setShadowColor(video::SColor(150, 0, 0, 0));
 		(*movable)->modelNode->setScale(core::vector3df(Sx, Sy, Sz));
 		(*movable)->modelNode->setPosition(core::vector3df(100, 100, 100));
-		(*movable)->modelNode->setMaterialFlag(video::EMF_LIGHTING, false);
+		(*movable)->modelNode->setMaterialFlag(video::EMF_LIGHTING, true);
 		luaL_getmetatable(state, "MetaMovable"); // Pushes onto the stack, the metatable associat the name in the registry
 		lua_setmetatable(state, -2); // Pops a table from the stack and sets it as the new metatable for the value at the given index
-
 		//std::cout << "HEALTHY STACK: " << std::endl;
 		//DumpStack(state);
 	}
@@ -128,7 +127,28 @@ int Movable::Movable_SetRotation(lua_State* state)
 
 	return 0;
 }
+int Movable::Movable_SetBB(lua_State* state)
+{
+	Movable* movable = checkMovable(state, 1);
+	
+	
+	float bb = 0.f;
+	string text = "";
+	if (lua_isnumber(state, -2))
+		
+		text = lua_tostring(state, -1);
+		bb = lua_tonumber(state, -2);
 
+		io::path filename(text.data());
+		
+		auto mesh = device->getSceneManager()->getMesh(filename);
+		mesh->setBoundingBox(core::aabbox3df(-bb, -bb, -bb, bb, bb, bb));
+		movable->modelNode->setDebugDataVisible(true);
+
+
+	//movable->modelNode->setDebugDataVisible(true);
+	return 0;
+}
 int Movable::Movable_SetScale(lua_State* state)
 {
 	Movable* movable = checkMovable(state, 1);
@@ -148,8 +168,9 @@ int Movable::Movable_SetScale(lua_State* state)
 
 int Movable::Movable_GetPosition(lua_State* state)
 {
-
+	
 	Movable* movable = checkMovable(state, 1);
+	movable->modelNode->setDebugDataVisible(true);
 	lua_pushnumber(state, movable->modelNode->getPosition().Z);
 	lua_pushnumber(state, movable->modelNode->getPosition().Y);
 	lua_pushnumber(state, movable->modelNode->getPosition().X);
@@ -178,6 +199,7 @@ void Movable::registerLuaCFunctions(lua_State* state) //Called externally once
 		{"setRotation", Movable::Movable_SetRotation},
 		{"getPosition", Movable::Movable_GetPosition},
 		{"getScale", Movable::Movable_GetScale},
+		{"setBB", Movable::Movable_SetBB},
 		{"__gc", Movable::Movable_Delete}, //Garbage collect function on lua's side
 		{NULL, NULL}
 	};

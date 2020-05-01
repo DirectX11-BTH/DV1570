@@ -320,7 +320,7 @@ int main()
 {
 
 	EventReceiver receiver;
-	IrrlichtDevice* device = createDevice(video::EDT_DIRECT3D9, core::dimension2d<u32>(WIDTH, HEIGHT), 16, false, false, true, &receiver);
+	IrrlichtDevice* device = createDevice(video::EDT_DIRECT3D9, core::dimension2d<u32>(WIDTH, HEIGHT), 16, false, true, true, &receiver);
 	globalReciever = &receiver;
 	device->setWindowCaption(L"Hello World! - Irrlicht Engine Demo");
 	video::IVideoDriver* driver = device->getVideoDriver();
@@ -333,7 +333,10 @@ int main()
 	skin->setFont(font2);
 	driver->getMaterial2D().TextureLayer[0].BilinearFilter=true;
     driver->getMaterial2D().AntiAliasing=video::EAAM_FULL_BASIC;
-	scene::ILightSceneNode* light = smgr->addLightSceneNode(0, core::vector3df(0, 25, 0), video::SColor(0.5f, 0.5f, 0.5f, 0.0f), 100.f);
+	scene::ILightSceneNode* light = smgr->addLightSceneNode(0, core::vector3df(0, 22, 0), video::SColorf(0.1f, 0.1f, 0.1f), 111.f);
+	scene::ILightSceneNode* light2 = smgr->addLightSceneNode(0, core::vector3df(33, 22, 0), video::SColorf(0.1f, 0.1f, 0.1f), 111.f);
+	scene::ILightSceneNode* light3 = smgr->addLightSceneNode(0, core::vector3df(33, 22, 33), video::SColorf(0.1f, 0.1f, 0.1f), 111.f);
+	light->enableCastShadow(true);
 	video::SLight testSlight = light->getLightData();
 
 	//light->setLightData()
@@ -356,8 +359,8 @@ int main()
 	scene::IAnimatedMesh* test = device->getSceneManager()->getMesh(filename);
 	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode(test);
 
-	node->setMaterialFlag(video::EMF_LIGHTING, false);
-	
+	node->setMaterialFlag(video::EMF_LIGHTING, true);
+	//node->setVisible(false);
 	// collision initialize
 	scene::ITriangleSelector* selector = 0;
 	if(node)
@@ -369,8 +372,7 @@ int main()
 
 	node->setScale({ 100, 1, 100 });
 
-
-	test->setBoundingBox(core::aabbox3df(-3.f,-3.f,-3.f,3.f,3.f,3.f));
+	//test->setBoundingBox(core::aabbox3df(-3.f,-3.f,-3.f,3.f,3.f,3.f));
 	smgr->addCameraSceneNode(0, vector3df(0, 25, 0), vector3df(0, 0, 0));
 
 	//light->setDebugDataVisible(scene::EDS_BBOX);
