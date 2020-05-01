@@ -1,4 +1,7 @@
-﻿bullets = {}
+﻿--LUA PROJECT BY GHAZI LIDBORN AND LEO 2020
+
+
+bullets = {}
 enemyBullets = {}
 enemies = {}
 speedDropTable = {}
@@ -13,8 +16,8 @@ spawnWhenTimerEquals = 100
 arenaSize = 40
 
 editMode = false
-placeTimer = 0
 reqToPlace = 10
+placeTimer = 0
 
 MovableLua = {
 	position = {x = 0, y = 0, z = 0},
@@ -140,43 +143,48 @@ Enemy.walkToZ = 0
 
 Obstacle = MovableLua:new() 
 
-myObstacle = Obstacle:new()
-myObstacle:init3DModel("deathCube.obj")
-myObstacle:setPosition(8, 0, 8)
-myObstacle:setScale(2, 0.1, 2)
-table.insert(obstacles, myObstacle)
+Spawnpoint = MovableLua:new()
 
 Wall = MovableLua:new()
 
-wall1 = Wall:new() -- top
-wall1:init3DModel()
-wall1:setPosition(0,0,arenaSize)
-wall1:setScale(arenaSize,1,3)
-table.insert(walls, wall1)
+function createArena()
+	local wall1 = Wall:new() -- top
+	wall1:init3DModel()
+	wall1:setPosition(0,0,arenaSize)
+	wall1:setScale(arenaSize,1,3)
+	table.insert(walls, wall1)
 
-wall2 = Wall:new() -- bot
-wall2:init3DModel()
-wall2:setPosition(0,0,-arenaSize)
-wall2:setScale(arenaSize,1,3 )
-table.insert(walls, wall2)
+	local wall2 = Wall:new() -- bot
+	wall2:init3DModel()
+	wall2:setPosition(0,0,-arenaSize)
+	wall2:setScale(arenaSize,1,3 )
+	table.insert(walls, wall2)
 
-wall3 = Wall:new() -- left
-wall3:init3DModel()
-wall3:setPosition(-arenaSize,0,0)
-wall3:setScale(3,1,arenaSize)
-table.insert(walls, wall3)
+	local wall3 = Wall:new() -- left
+	wall3:init3DModel()
+	wall3:setPosition(-arenaSize,0,0)
+	wall3:setScale(3,1,arenaSize)
+	table.insert(walls, wall3)
 
-wall4 = Wall:new() -- right
-wall4:init3DModel()
-wall4:setPosition(arenaSize,0,0)
-wall4:setScale(3,1,arenaSize)
-table.insert(walls, wall4)
+	local wall4 = Wall:new() -- right
+	wall4:init3DModel()
+	wall4:setPosition(arenaSize,0,0)
+	wall4:setScale(3,1,arenaSize)
+	table.insert(walls, wall4)
 
-wall5 = Wall:new() -- obstacle
-wall5:init3DModel()
-wall5:setPosition(5,0,5)
-wall5:setScale(4,3,3)
-table.insert(walls, wall5)
+	local startSpawn = Spawnpoint:new() -- default spawner, needed for logic
+	startSpawn:init3DModel("spawnCube.obj")
+	startSpawn:setPosition(10,0,10)
+	startSpawn:setScale(2,0.1,2)
+	table.insert(spawnPoints, startSpawn)
+end
+
+	local startSpawn = Spawnpoint:new() -- default spawner, needed for logic
+	startSpawn:init3DModel("spawnCube.obj")
+	startSpawn:setPosition(10,0,10)
+	startSpawn:setScale(2,0.1,2)
+	table.insert(spawnPoints, startSpawn)
+
 
 function Enemy:update(playerVar)
 	local x, y, z = self:getPosition()
@@ -188,9 +196,6 @@ function Enemy:update(playerVar)
 		self.walkToZ = math.random(-18,18)
 
 	end
-
-
-	--print("DELTA", math.floor(math.abs(x - self.walkToX)), math.floor(math.abs(y - self.walkToZ)), "TARGET", math.floor(self.walkToX), math.floor(self.walkToZ), "POS", math.floor(x), math.floor(y))
 
 	if self.walkToX > x then
 		self:move(0.08, 0, 0)
@@ -210,8 +215,7 @@ function Enemy:update(playerVar)
 	local angle = math.atan(deltaX, deltaY)
 	self:setRotation(-(angle * 180)/math.pi)
 
-	--self.shootDebounce = 0
-	--print(self.shootDebounce)
+
 	if self.shootDebounce >= self.requiredToShoot then
 		local bullet = Projectile:new()
 		bullet:init3DModel("actualCube.obj")
@@ -258,7 +262,9 @@ function initEnemies()
 		local myEnemy = Enemy:new()
 		myEnemy:init3DModel("actualCube.obj") 
 		myEnemy:setScale(1,3,1)
-		myEnemy:setPosition(5,0,5)
+
+		local spawnX, spawnY, spawnZ = spawnPoints[math.random(#spawnPoints)]:getPosition()
+		myEnemy:setPosition(spawnX, spawnY, spawnZ)
 		myEnemy.shootDebounce = math.random(0,10)
 		enemies[#enemies+1] = myEnemy
 	end
@@ -269,7 +275,7 @@ w = false -- not needed to be reset, kept for visibility
 s = false
 a = false
 d = false
-
+middleMouseButton = false
 --one = false
 --two = false
 --three = false
@@ -302,9 +308,9 @@ function handleBulletCollisions()
 	end
 end
 
+createArena()
 function update()
 	setCameraPos(x, 25, z)
-	--print("Collision: ", checkCollision(myEnemy.gameObject, myPlayer.gameObject))
 	local middleX = screenWidth/2
 	local middleY = screenHeight/2
 
@@ -362,7 +368,6 @@ function update()
 			end
 	end
 
-	--print("MOSUE:",mouseButtonOne, "debouce:", myPlayer.shootDebounce, "Can shoot?", myPlayer.shootDebounce>=myPlayer.requiredToShoot)
 		if mouseButtonOne and myPlayer.shootDebounce >= myPlayer.requiredToShoot then
 
 			local xSpeed = math.sin(angle)*5
@@ -455,7 +460,6 @@ function update()
 			myPlayer.shootDebounce = myPlayer.shootDebounce + 0.2
 		end
 
-		--print(#speedDropTable)
 		for i,v in pairs(speedDropTable) do
 			local collided = checkCollision(v.gameObject, myPlayer.gameObject)
 			if collided then
@@ -488,11 +492,27 @@ function update()
 		respawnTimer = respawnTimer + 1
 		if respawnTimer >= spawnWhenTimerEquals then
 			local enemy = Enemy:new()
-			enemy:init3DModel()
-			enemy:setScale(1,3,1)
 
-			--local spawnPos = spawnPoints[math.random(#spawnPoints)].position
-			enemy:setPosition(math.random(-10,10), 0, math.random(-10,10))
+			local type = math.random(1,3)
+
+
+			if type == 1 then
+				enemy:init3DModel()
+				enemy:setScale(1,3,1)
+			elseif type == 2 then
+				enemy:init3DModel("spawnCube.obj")
+				enemy:setScale(0.6,3,0.6)
+				enemy.health = 60
+				enemy.requiredToShoot = Enemy.requiredToShoot-2
+			elseif type == 3 then
+				enemy:init3DModel("deathCube.obj")
+				enemy:setScale(1.5,3,1.5)
+				enemy.requiredToShoot = Enemy.requiredToShoot-5
+				enemy.health = 130
+			end
+
+			local spawnX, spawnY, spawnZ = spawnPoints[math.random(#spawnPoints)]:getPosition()
+			enemy:setPosition(spawnX, spawnY, spawnZ)
 			table.insert(enemies, enemy)
 		respawnTimer = 0
 		end
@@ -552,28 +572,41 @@ function update()
 		end
 	end
 
-	if m then
+	if m  and placeTimer == 0 then
+		placeTimer = 0
 		editMode = true
 		print("REMOVE STUFF NOW")
 		-- removes all objects from scene
 		for bulletIndex,enemyBullet in pairs(enemyBullets) do
-			table.remove(enemyBullet,bulletIndex)
+			--table.remove(enemyBullet,bulletIndex)
+			enemyBullets[bulletIndex] = nil
 		end 
 
 		for i,v in pairs(bullets) do
-			table.remove(bullets, i)
+			--table.remove(bullets, i)
+			bullets[i] = nil
 		end
 
 		for i,v in pairs(enemies) do
-			table.remove(enemies, i)
+			enemies[i] = nil
+			--table.remove(enemies, i)
 		end
 
 		for i,v in pairs(speedDropTable) do
-			table.remove(speedDropTable,i)
+			--table.remove(speedDropTable,i)
+			speedDropTable[i] = nil
 		end
 
+		for i,v in pairs(spawnPoints) do
+			--table.remove(speedDropTable,i)
+			spawnPoints[i] = nil
+		end
+		--needs more mandalorian
+		--secretTextToShowWeMadeThisProgram Jakob, Ghazi and the other dude <3 'Barry'
 		for i,v in pairs(heartDropTable) do
-			table.remove(heartDropTable,i)
+
+			heartDropTable[i] = nil
+			------table.remove(heartDropTable,i)
 		end
 	end
 	
@@ -583,11 +616,18 @@ function update()
 			placeTimer = 0
 		--clear all objects in list
 			for i,v in pairs(obstacles) do
-				table.remove(obstacles, i)
+				obstacles[i] = nil
+				--table.remove(obstacles, i)
+			end
+
+			for i,v in pairs(spawnPoints) do
+				--table.remove(speedDropTable,i)
+				spawnPoints[i] = nil
 			end
 
 			for i,v in pairs(walls) do
-				table.remove(walls, i)
+				walls[i] = nil
+				--table.remove(walls, i)
 			end
 			--creates edges
 			createArena()
@@ -598,7 +638,7 @@ function update()
 		 
 		if mouseButtonOne and (reqToPlace < placeTimer) then
 			placeTimer = 0
-
+			
 			local wall = Wall:new() -- top
 			wall:init3DModel()
 			wall:setPosition(x,0,z)
@@ -614,7 +654,17 @@ function update()
 			table.insert(obstacles, obstacle)
 		end
 
-		print(placeTimer, reqToPlace)
+		if middleMouseButton and (reqToPlace < placeTimer) then
+			placeTimer = 0
+			print("SPAWN POINT")
+			local spawner = Spawnpoint:new() -- top
+			spawner:init3DModel("spawnCube.obj")
+			spawner:setPosition(x,0,z)
+			spawner:setScale(2,0.1,2)
+			table.insert(spawnPoints, spawner)
+		end
+
+
 		if (placeTimer <= reqToPlace) then
 			placeTimer = placeTimer + 1
 		end
@@ -623,8 +673,108 @@ function update()
 			placeTimer = 0
 			print("Turning off edit mode")
 			editMode = false
+
+			if #spawnPoints == 0 then
+				local startSpawn = Spawnpoint:new() -- default spawner, needed for logic
+				startSpawn:init3DModel("spawnCube.obj")
+				startSpawn:setPosition(10,0,10)
+				startSpawn:setScale(2,0.1,2)
+				table.insert(spawnPoints, startSpawn)	
+			end
 		end
 
+		--READ FROM FILE
+		if F1 and (reqToPlace < placeTimer) then
+			--print("READING FILE")
+			print(F1)
+			placeTimer = 0
+			--READS SPAWPOINTS FROM FILE
+			local file = io.open("save.lua", "r")
+			io.input(file)
+
+			local nrOfSpawnPoints = io.read() 
+			print("Spawnpoints ".. nrOfSpawnPoints)
+			for i=1,nrOfSpawnPoints do
+				local x = io.read()
+				local z = io.read()
+				--print(x,z)
+				local startSpawn = Spawnpoint:new() -- default spawner
+				startSpawn:init3DModel("spawnCube.obj")
+				startSpawn:setPosition(x,0,z)
+				startSpawn:setScale(2,0.1,2)
+				table.insert(spawnPoints, startSpawn)
+			end
+			--READS OBSTACLES FROM FILE
+			local nrOfObstacles = io.read() 
+			for i=1,nrOfObstacles do
+				local x = io.read()
+				local z = io.read()
+				--print(x,z)
+				local obstacle = Obstacle:new() -- default obstacle
+				obstacle:init3DModel("deathCube.obj")
+				obstacle:setPosition(x,0,z)
+				obstacle:setScale(2,0.1,2)
+				table.insert(obstacles, obstacle)
+			end
+			--READS WALLS FROM FILE
+			local nrOfWalls = io.read() 
+			for i=1,nrOfWalls do
+				local x = io.read()
+				local z = io.read()
+				--print(x,z)
+				local wall = Wall:new() -- default wall
+				wall:init3DModel("actualCube.obj")
+				wall:setPosition(x,0,z)
+				wall:setScale(3,1,3)
+				table.insert(walls, wall)
+			end
+
+			io.close(file)
+		end
+
+		--WRITE TO FILE
+		if F2 and (reqToPlace < placeTimer) then
+			placeTimer = 0
+			local file = io.open("save.lua", "w")
+			io.output(file)
+			--WRITES SPAWNPOINTS TO FILE
+			io.write(tostring(#spawnPoints)) -- write nr of spawnpoints first
+			io.write("\n")
+
+			for i,v in pairs(spawnPoints) do
+				local x, y, z = v.gameObject:getPosition()
+				io.write(x)
+				io.write("\n")
+				io.write(z)
+				io.write("\n")
+			end
+			--WRITES OBSTACLES TO FILE
+			io.write(tostring(#obstacles)) -- write nr of obstacles
+			io.write("\n")
+			for i,v in pairs(obstacles) do
+				local x, y, z = v.gameObject:getPosition()
+				io.write(x)
+				io.write("\n")
+				io.write(z)
+				io.write("\n")
+			end
+			--WRITES WALLS TO FILE
+			io.write(tostring((#walls)-4)) -- write nr of walls
+			io.write("\n")
+			for i,v in pairs(walls) do
+				if i > 4 then
+					local x, y, z = v.gameObject:getPosition()
+					io.write(x)
+					io.write("\n")
+					io.write(z)
+					io.write("\n")
+				end
+			end
+
+
+			io.close(file)
+
+		end
 	end
 	collectgarbage("collect")
 end

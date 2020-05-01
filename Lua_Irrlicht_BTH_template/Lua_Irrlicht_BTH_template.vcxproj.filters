@@ -37,5 +37,8 @@
     <None Include="..\Bin\x64\update.lua">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="..\Bin\x64\save.lua">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

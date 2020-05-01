@@ -44,6 +44,9 @@ bool n = false;
 bool m = false;
 bool mouseButtonOne = false;
 bool mouseButtonTwo = false;
+bool F1 = false;
+bool F2 = false;
+bool middleMouseButton = false;
 wstring displayString = L"";
 
 int checkCollision(lua_State* state)
@@ -183,6 +186,16 @@ void pushKeysToLua(float mouseX, float mouseY)
 
 	lua_pushboolean(luaState, n);
 	lua_setglobal(luaState, "n");
+
+	lua_pushboolean(luaState, middleMouseButton);
+	lua_setglobal(luaState, "middleMouseButton");
+
+	lua_pushboolean(luaState, F1);
+	lua_setglobal(luaState, "F1");
+
+	lua_pushboolean(luaState, F2);
+	lua_setglobal(luaState, "F2");
+
 }
 
 void checkKeys()
@@ -197,13 +210,23 @@ void checkKeys()
 	two = false;
 	three = false;
 	space = false;
+	F1 = false;
+	F2 = false;
 	mouseButtonOne = false;
 	mouseButtonTwo = false;
-
+	middleMouseButton = false;
 
 	if (GetAsyncKeyState(KEY_KEY_W))
 	{
 		w = true;
+	}
+	if (GetAsyncKeyState(VK_F1))
+	{
+		F1 = true;
+	}
+	if (GetAsyncKeyState(VK_F2))
+	{
+		F2 = true;
 	}
 	if (GetAsyncKeyState(KEY_KEY_S))
 	{
@@ -252,6 +275,10 @@ void checkKeys()
 	if (GetAsyncKeyState(VK_RBUTTON))
 	{
 		mouseButtonTwo = true;
+	}
+	if (GetAsyncKeyState(VK_MBUTTON))
+	{
+		middleMouseButton = true;
 	}
 	
 }
