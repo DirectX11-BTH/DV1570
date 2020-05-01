@@ -192,6 +192,7 @@ end
 
 function readFile()
 local file = io.open("save.lua", "r")
+			removeObjects()
 			io.input(file)
 
 			local nrOfSpawnPoints = io.read() 
@@ -233,6 +234,43 @@ local file = io.open("save.lua", "r")
 			end
 
 			io.close(file)
+end
+
+function removeObjects()
+		print("REMOVING")
+		-- removes all objects from scene
+		for bulletIndex,enemyBullet in pairs(enemyBullets) do
+			--table.remove(enemyBullet,bulletIndex)
+			enemyBullets[bulletIndex] = nil
+		end 
+
+		for i,v in pairs(bullets) do
+			--table.remove(bullets, i)
+			bullets[i] = nil
+		end
+
+		for i,v in pairs(enemies) do
+			enemies[i] = nil
+			--table.remove(enemies, i)
+		end
+
+		for i,v in pairs(speedDropTable) do
+			--table.remove(speedDropTable,i)
+			speedDropTable[i] = nil
+		end
+
+		for i,v in pairs(spawnPoints) do
+			--table.remove(speedDropTable,i)
+			spawnPoints[i] = nil
+		end
+		--needs more mandalorian
+		--secretTextToShowWeMadeThisProgram Jakob, Ghazi and the other dude <3 'Barry'
+		for i,v in pairs(heartDropTable) do
+
+			heartDropTable[i] = nil
+			------table.remove(heartDropTable,i)
+		end
+
 end
 function Enemy:update(playerVar)
 	local x, y, z = self:getPosition()
@@ -734,7 +772,8 @@ function update()
 
 		--READ FROM FILE
 		if F1 and (reqToPlace < placeTimer) then
-			--print("READING FILE")
+			removeObjects()
+			print("READING FILE")
 			print(F1)
 			placeTimer = 0
 			--READS SPAWPOINTS FROM FILE
