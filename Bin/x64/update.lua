@@ -1,17 +1,20 @@
-﻿
-bullets = {}
+﻿bullets = {}
 enemyBullets = {}
 enemies = {}
 speedDropTable = {}
 heartDropTable = {}
 walls = {}
 obstacles = {}
+spawnPoints = {}
 
 score = 0
 respawnTimer = 0
 spawnWhenTimerEquals = 100
 arenaSize = 40
 
+editMode = false
+placeTimer = 0
+reqToPlace = 10
 
 MovableLua = {
 	position = {x = 0, y = 0, z = 0},
@@ -134,6 +137,7 @@ Enemy.requiredToShoot = 10
 Enemy.walkToX = 0
 Enemy.walkToZ = 0
 
+
 Obstacle = MovableLua:new() 
 
 myObstacle = Obstacle:new()
@@ -253,6 +257,7 @@ function initEnemies()
 	for i = 1,1 do
 		local myEnemy = Enemy:new()
 		myEnemy:init3DModel("actualCube.obj") 
+		myEnemy:setScale(1,3,1)
 		myEnemy:setPosition(5,0,5)
 		myEnemy.shootDebounce = math.random(0,10)
 		enemies[#enemies+1] = myEnemy
@@ -298,6 +303,7 @@ function handleBulletCollisions()
 end
 
 function update()
+	setCameraPos(x, 25, z)
 	--print("Collision: ", checkCollision(myEnemy.gameObject, myPlayer.gameObject))
 	local middleX = screenWidth/2
 	local middleY = screenHeight/2
@@ -326,206 +332,240 @@ function update()
 		myPlayer.speed = myPlayer.speed-0.00002;
 	end
 	
-	for i,wall in pairs(walls) do
-		collided = checkCollision(myPlayer.gameObject, wall.gameObject)
-		if collided then
-			local objX, objY, objZ = wall.gameObject:getPosition()
-			local objSX, objSY, objSZ = wall.gameObject:getScale()
+	if not editMode then
+		for i,wall in pairs(walls) do
+			collided = checkCollision(myPlayer.gameObject, wall.gameObject)
+			if collided then
+				local objX, objY, objZ = wall.gameObject:getPosition()
+				local objSX, objSY, objSZ = wall.gameObject:getScale()
 
 			
 
-			local pX, pY, pZ = myPlayer.gameObject:getPosition()
+				local pX, pY, pZ = myPlayer.gameObject:getPosition()
 
-			if pX < (objX + objSX) or pX < (objX - objSX) then -- object is on the right
-				myPlayer:move(-0.06*myPlayer.speed, 0, 0)
-			end
+				if pX < (objX + objSX) or pX < (objX - objSX) then -- object is on the right
+					myPlayer:move(-0.06*myPlayer.speed, 0, 0)
+				end
 			
-			if pX > (objX + objSX) or pX > (objX - objSX) then -- object is on the left
-				myPlayer:move(0.06*myPlayer.speed, 0, 0)
-			end
+				if pX > (objX + objSX) or pX > (objX - objSX) then -- object is on the left
+					myPlayer:move(0.06*myPlayer.speed, 0, 0)
+				end
 
-			if pZ > (objZ + objSZ) or pZ > (objZ - objSZ) then -- object is below
-				myPlayer:move(0, 0, 0.06*myPlayer.speed)
-			end
+				if pZ > (objZ + objSZ) or pZ > (objZ - objSZ) then -- object is below
+					myPlayer:move(0, 0, 0.06*myPlayer.speed)
+				end
 
-			if pZ < (objZ + objSZ) or pZ < (objZ - objSZ) then -- object is above
-				myPlayer:move(0, 0, -0.06*myPlayer.speed)
+				if pZ < (objZ + objSZ) or pZ < (objZ - objSZ) then -- object is above
+					myPlayer:move(0, 0, -0.06*myPlayer.speed)
+				end
+				-- determine which direction and push player out again 
 			end
-			-- determine which direction and push player out again 
-		end
 	end
 
 	--print("MOSUE:",mouseButtonOne, "debouce:", myPlayer.shootDebounce, "Can shoot?", myPlayer.shootDebounce>=myPlayer.requiredToShoot)
-	if mouseButtonOne and myPlayer.shootDebounce >= myPlayer.requiredToShoot then
+		if mouseButtonOne and myPlayer.shootDebounce >= myPlayer.requiredToShoot then
 
-		local xSpeed = math.sin(angle)*5
-		local zSpeed = math.cos(angle)*5
+			local xSpeed = math.sin(angle)*5
+			local zSpeed = math.cos(angle)*5
 
-		xPos, yPos, zPos = myPlayer:getPosition()
+			xPos, yPos, zPos = myPlayer:getPosition()
 		
-		if myPlayer.selectedWeapon == "AUTO" then
-			local bullet = Projectile:new()
-			bullet:init3DModel("actualCube.obj")
-			bullet:setScale(0.5, 0.5, 0.5)
-			bullet:setPosition(xPos, yPos, zPos)
-			bullet.xSpeed = xSpeed
-			bullet.zSpeed = zSpeed
-			bullet.currentFrames = Projectile.currentFrames
-			bullet.invFrames = Projectile.invFrames
-
-			table.insert(bullets, bullet)
-			myPlayer.shootDebounce = 0
-		end
-
-		if myPlayer.selectedWeapon == "SHOTGUN" then
-			for i = 1,5 do
+			if myPlayer.selectedWeapon == "AUTO" then
 				local bullet = Projectile:new()
 				bullet:init3DModel("actualCube.obj")
 				bullet:setScale(0.5, 0.5, 0.5)
 				bullet:setPosition(xPos, yPos, zPos)
-				bullet.xSpeed = xSpeed*0.4  + (math.random(-7,7)/10)
-				bullet.zSpeed = zSpeed*0.4 + (math.random(-7,7)/10)
+				bullet.xSpeed = xSpeed
+				bullet.zSpeed = zSpeed
 				bullet.currentFrames = Projectile.currentFrames
 				bullet.invFrames = Projectile.invFrames
 
 				table.insert(bullets, bullet)
 				myPlayer.shootDebounce = 0
 			end
-		end
 
-		if myPlayer.selectedWeapon == "SNIPER" then
-			local bullet = Projectile:new()
-			bullet:init3DModel("actualCube.obj")
-			bullet:setScale(0.2, 0.2, 0.2)
-			bullet:setPosition(xPos, yPos, zPos)
-			bullet.xSpeed = xSpeed*1.2
-			bullet.zSpeed = zSpeed*1.2
+			if myPlayer.selectedWeapon == "SHOTGUN" then
+				for i = 1,5 do
+					local bullet = Projectile:new()
+					bullet:init3DModel("actualCube.obj")
+					bullet:setScale(0.5, 0.5, 0.5)
+					bullet:setPosition(xPos, yPos, zPos)
+					bullet.xSpeed = xSpeed*0.4  + (math.random(-7,7)/10)
+					bullet.zSpeed = zSpeed*0.4 + (math.random(-7,7)/10)
+					bullet.currentFrames = Projectile.currentFrames
+					bullet.invFrames = Projectile.invFrames
 
-			bullet.currentFrames = Projectile.currentFrames
-			bullet.invFrames = Projectile.invFrames
-			table.insert(bullets, bullet)
-			myPlayer.shootDebounce = 0
-		end
+					table.insert(bullets, bullet)
+					myPlayer.shootDebounce = 0
+				end
+			end
 
-		if #bullets >= 20 then -- removes bullets if too many
+			if myPlayer.selectedWeapon == "SNIPER" then
+				local bullet = Projectile:new()
+				bullet:init3DModel("actualCube.obj")
+				bullet:setScale(0.2, 0.2, 0.2)
+				bullet:setPosition(xPos, yPos, zPos)
+				bullet.xSpeed = xSpeed*1.2
+				bullet.zSpeed = zSpeed*1.2
+
+				bullet.currentFrames = Projectile.currentFrames
+				bullet.invFrames = Projectile.invFrames
+				table.insert(bullets, bullet)
+				myPlayer.shootDebounce = 0
+			end
+
+			if #bullets >= 20 then -- removes bullets if too many
 			
-			table.remove(bullets, 1)
-		end
-	end
-
-	for i,v in pairs(bullets) do -- v is the bullet in the array
-		local xSpeed = v.xSpeed
-		local zSpeed = v.zSpeed
-		v.currentFrames = v.currentFrames + 1
-		v:move(xSpeed, 0, zSpeed)
-	end
-
-	for i,v in pairs(enemyBullets) do -- v is the bullet in the array
-		local xSpeed = v.xSpeed
-		local zSpeed = v.zSpeed
-		v.currentFrames = v.currentFrames + 1
-		v:move(xSpeed, 0, zSpeed)
-	end
-
-	for i,v in pairs(enemies) do -- update all enemies
-		
-		if v.health > 0 then
-			v:update(myPlayer)
-
-		else -- enemy died
-			v:dropItems()
-			table.remove(enemies, i)
-			score = score + 10
-		end
-
-	end
-
-
-	local x, y, z = myPlayer:getPosition()
-	setCameraPos(x, 25, z)
-
-	if myPlayer.shootDebounce < myPlayer.requiredToShoot then
-		myPlayer.shootDebounce = myPlayer.shootDebounce + 0.2
-	end
-
-	--print(#speedDropTable)
-	for i,v in pairs(speedDropTable) do
-		local collided = checkCollision(v.gameObject, myPlayer.gameObject)
-		if collided then
-			myPlayer.speed = myPlayer.speed + 0.02
-			table.remove(speedDropTable, i)
-			print("REMOVED", i, "Remaining:", #speedDropTable)
-		end
-	end
-
-	for i,v in pairs(heartDropTable) do
-		if checkCollision(v.gameObject, myPlayer.gameObject) then
-			myPlayer.health = myPlayer.health + 10
-			table.remove(heartDropTable, i)
-		end
-	end
-
-
-	for _,enemy in pairs(enemies) do
-		if enemy.shootDebounce < enemy.requiredToShoot then
-			enemy.shootDebounce = enemy.shootDebounce + 0.2
-		end
-	end
-
-	setText("Health: ".. myPlayer.health .. "\nSpeed: "..(math.ceil(myPlayer.speed*100)/100).. "\nWeapon Selected: "..myPlayer.selectedWeapon.."\nScore: "..score)
-	myPlayer:handleCheckWeapon()
-
-	handleBulletCollisions()
-	collectgarbage("collect")
-
-	respawnTimer = respawnTimer + 1
-	if respawnTimer >= spawnWhenTimerEquals then
-		local enemy = Enemy:new()
-		enemy:init3DModel()
-		enemy:setPosition(math.random(-10,10), 0, math.random(-10,10))
-		table.insert(enemies, enemy)
-	respawnTimer = 0
-	end
-
-	for bulletIndex,bullet in pairs(bullets) do
-		for _,wall in pairs(walls) do
-			coll = checkCollision(bullet.gameObject, wall.gameObject)
-			if coll then
-				table.remove(bullets, bulletIndex)
+				table.remove(bullets, 1)
 			end
 		end
-	end
 
-	for bulletIndex,bullet in pairs(enemyBullets) do
-		for _,wall in pairs(walls) do
-			coll = checkCollision(bullet.gameObject, wall.gameObject)
-			if coll then
-				table.remove(enemyBullets, bulletIndex)
+		for i,v in pairs(bullets) do -- v is the bullet in the array
+			local xSpeed = v.xSpeed
+			local zSpeed = v.zSpeed
+			v.currentFrames = v.currentFrames + 1
+			v:move(xSpeed, 0, zSpeed)
+		end
+
+		for i,v in pairs(enemyBullets) do -- v is the bullet in the array
+			local xSpeed = v.xSpeed
+			local zSpeed = v.zSpeed
+			v.currentFrames = v.currentFrames + 1
+			v:move(xSpeed, 0, zSpeed)
+		end
+
+		for i,v in pairs(enemies) do -- update all enemies
+		
+			if v.health > 0 then
+				v:update(myPlayer)
+
+			else -- enemy died
+				v:dropItems()
+				table.remove(enemies, i)
+				score = score + 10
+			end
+
+		end
+
+
+		local x, y, z = myPlayer:getPosition()
+	
+
+		if myPlayer.shootDebounce < myPlayer.requiredToShoot then
+			myPlayer.shootDebounce = myPlayer.shootDebounce + 0.2
+		end
+
+		--print(#speedDropTable)
+		for i,v in pairs(speedDropTable) do
+			local collided = checkCollision(v.gameObject, myPlayer.gameObject)
+			if collided then
+				myPlayer.speed = myPlayer.speed + 0.02
+				table.remove(speedDropTable, i)
+				print("REMOVED", i, "Remaining:", #speedDropTable)
 			end
 		end
-	end
 
-	for obstacleIndex,obstacle in pairs(obstacles) do
-		collision = checkCollision(myPlayer.gameObject, obstacle.gameObject)
-		if collision then
-			myPlayer.health = myPlayer.health - 0.03
-			score = score - 0.03
+		for i,v in pairs(heartDropTable) do
+			if checkCollision(v.gameObject, myPlayer.gameObject) then
+				myPlayer.health = myPlayer.health + 10
+				table.remove(heartDropTable, i)
+			end
 		end
-	end
 
-	if not (myPlayer.health > 0) then
-		myPlayer:setPosition(0,0,0)
-		
-		for i,v in pairs(enemies) do
-			table.remove(enemies, i)
+
+		for _,enemy in pairs(enemies) do
+			if enemy.shootDebounce < enemy.requiredToShoot then
+				enemy.shootDebounce = enemy.shootDebounce + 0.2
+			end
 		end
-		
-		for bulletIndex,bullet in pairs(enemyBullets) do
-			table.remove(enemyBullets,bulletIndex)
+
+		setText("Health: ".. myPlayer.health .. "\nSpeed: "..(math.ceil(myPlayer.speed*100)/100).. "\nWeapon Selected: "..myPlayer.selectedWeapon.."\nScore: "..score)
+		myPlayer:handleCheckWeapon()
+
+		handleBulletCollisions()
+
+		-- spawns new enemies
+		respawnTimer = respawnTimer + 1
+		if respawnTimer >= spawnWhenTimerEquals then
+			local enemy = Enemy:new()
+			enemy:init3DModel()
+			enemy:setScale(1,3,1)
+
+			--local spawnPos = spawnPoints[math.random(#spawnPoints)].position
+			enemy:setPosition(math.random(-10,10), 0, math.random(-10,10))
+			table.insert(enemies, enemy)
+		respawnTimer = 0
 		end
 
 		for bulletIndex,bullet in pairs(bullets) do
-			table.remove(bullets,bulletIndex)
+			for _,wall in pairs(walls) do
+				coll = checkCollision(bullet.gameObject, wall.gameObject)
+				if coll then
+					table.remove(bullets, bulletIndex)
+				end
+			end
+		end
+
+		for bulletIndex,bullet in pairs(enemyBullets) do
+			for _,wall in pairs(walls) do
+				coll = checkCollision(bullet.gameObject, wall.gameObject)
+				if coll then
+					table.remove(enemyBullets, bulletIndex)
+				end
+			end
+		end
+
+		for obstacleIndex,obstacle in pairs(obstacles) do
+			collision = checkCollision(myPlayer.gameObject, obstacle.gameObject)
+			if collision then
+				myPlayer.health = myPlayer.health - 0.03
+				score = score - 0.03
+			end
+		end
+
+		if not (myPlayer.health > 0) then
+			myPlayer:setPosition(0,0,0)
+		
+			for i,v in pairs(enemies) do
+				table.remove(enemies, i)
+			end
+		
+			for bulletIndex,bullet in pairs(enemyBullets) do
+				table.remove(enemyBullets,bulletIndex)
+			end
+
+			for bulletIndex,bullet in pairs(bullets) do
+				table.remove(bullets,bulletIndex)
+			end
+
+			for i,v in pairs(speedDropTable) do
+				table.remove(speedDropTable,i)
+			end
+
+			for i,v in pairs(heartDropTable) do
+				table.remove(heartDropTable,i)
+			end
+
+			myPlayer.speed = Player.speed
+			myPlayer.health = Player.health
+			score = 0
+		end
+	end
+
+	if m then
+		editMode = true
+		print("REMOVE STUFF NOW")
+		-- removes all objects from scene
+		for bulletIndex,enemyBullet in pairs(enemyBullets) do
+			table.remove(enemyBullet,bulletIndex)
+		end 
+
+		for i,v in pairs(bullets) do
+			table.remove(bullets, i)
+		end
+
+		for i,v in pairs(enemies) do
+			table.remove(enemies, i)
 		end
 
 		for i,v in pairs(speedDropTable) do
@@ -535,9 +575,56 @@ function update()
 		for i,v in pairs(heartDropTable) do
 			table.remove(heartDropTable,i)
 		end
-
-		myPlayer.speed = Player.speed
-		myPlayer.health = Player.health
-		score = 0
 	end
+	
+
+	if editMode then
+		if space then
+			placeTimer = 0
+		--clear all objects in list
+			for i,v in pairs(obstacles) do
+				table.remove(obstacles, i)
+			end
+
+			for i,v in pairs(walls) do
+				table.remove(walls, i)
+			end
+			--creates edges
+			createArena()
+		end
+
+		local x, y, z = getMouseHit()
+
+		 
+		if mouseButtonOne and (reqToPlace < placeTimer) then
+			placeTimer = 0
+
+			local wall = Wall:new() -- top
+			wall:init3DModel()
+			wall:setPosition(x,0,z)
+			wall:setScale(3,1,3)
+			table.insert(walls, wall)
+		end 
+		if mouseButtonTwo and (reqToPlace < placeTimer) then
+			placeTimer = 0
+			local obstacle = Obstacle:new() -- top
+			obstacle:init3DModel("deathCube.obj")
+			obstacle:setPosition(x,0,z)
+			obstacle:setScale(2,0.1,2)
+			table.insert(obstacles, obstacle)
+		end
+
+		print(placeTimer, reqToPlace)
+		if (placeTimer <= reqToPlace) then
+			placeTimer = placeTimer + 1
+		end
+
+		if editMode and n then
+			placeTimer = 0
+			print("Turning off edit mode")
+			editMode = false
+		end
+
+	end
+	collectgarbage("collect")
 end
