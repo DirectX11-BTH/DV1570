@@ -18,8 +18,6 @@ void DumpStack(lua_State* L)
 Movable::Movable()
 {
 
-	
-	//mesh->setBoundingBox(core::aabbox3df(-3.f,-3.f,-3.f,3.f,3.f,3.f));
 }
 
 int Movable::Movable_New(lua_State* state)
@@ -44,10 +42,8 @@ int Movable::Movable_New(lua_State* state)
 		if (found == meshDictionary->end()) //If not found in the table
 		{
 			auto mesh = device->getSceneManager()->getMesh(filename); //Add it
-			//mesh->setBoundingBox(setBoundingBox(core::aabbox3df(-3.f, -3.f, -3.f, 3.f, 3.f, 3.f));
 			meshDictionary->insert(make_pair(path, mesh));
 			(*movable)->modelNode = device->getSceneManager()->addMeshSceneNode(mesh);
-			//(*movable)->mesh = 
 		}
 		else
 		{
@@ -55,15 +51,12 @@ int Movable::Movable_New(lua_State* state)
 		}
 		assert((*movable)->modelNode != nullptr);
 
-		//(*movable)->modelNode->addShadowVolumeSceneNode();
-		//smgr->setShadowColor(video::SColor(150, 0, 0, 0));
+
 		(*movable)->modelNode->setScale(core::vector3df(Sx, Sy, Sz));
 		(*movable)->modelNode->setPosition(core::vector3df(100, 100, 100));
 		(*movable)->modelNode->setMaterialFlag(video::EMF_LIGHTING, true);
 		luaL_getmetatable(state, "MetaMovable"); // Pushes onto the stack, the metatable associat the name in the registry
 		lua_setmetatable(state, -2); // Pops a table from the stack and sets it as the new metatable for the value at the given index
-		//std::cout << "HEALTHY STACK: " << std::endl;
-		//DumpStack(state);
 	}
 	else
 	{
@@ -110,8 +103,6 @@ int Movable::Movable_Delete(lua_State* state)
 	movable->modelNode->remove();
 	delete movable;
 
-	//cout << "Deleted Movable" << endl;
-
 	return 0;
 }
 
@@ -143,10 +134,7 @@ int Movable::Movable_SetBB(lua_State* state)
 		
 		auto mesh = device->getSceneManager()->getMesh(filename);
 		mesh->setBoundingBox(core::aabbox3df(-bb, -bb, -bb, bb, bb, bb));
-		movable->modelNode->setDebugDataVisible(true);
 
-
-	//movable->modelNode->setDebugDataVisible(true);
 	return 0;
 }
 int Movable::Movable_SetScale(lua_State* state)
@@ -170,7 +158,6 @@ int Movable::Movable_GetPosition(lua_State* state)
 {
 	
 	Movable* movable = checkMovable(state, 1);
-	movable->modelNode->setDebugDataVisible(true);
 	lua_pushnumber(state, movable->modelNode->getPosition().Z);
 	lua_pushnumber(state, movable->modelNode->getPosition().Y);
 	lua_pushnumber(state, movable->modelNode->getPosition().X);

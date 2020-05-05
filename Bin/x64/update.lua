@@ -1,4 +1,21 @@
-﻿--LUA PROJECT BY GHAZI LIDBORN AND LEO 2020
+﻿--LUA PROJECT BY GHAZI LIDBORN AND LEO 2020 #corona
+
+controls = [[
+Keys:
+Play mode:
+w, a, s, d - for movements
+Left button - fire
+
+Edit mode:
+m - start editor
+n - exit editor
+Left mouse button - place Wall
+Right mouse button - place Obstacle
+Middle mouse button - place spawnPad
+F1 - Load saved level
+F2 - Save level
+Space - clear level
+]]
 
 
 bullets = {}
@@ -81,17 +98,14 @@ function MovableLua:init3DModel(path, sx, sy, sz)
 	sy = sy or 1
 	sz = sz or 1
 
-	--print("INIT 3D MODEL", path, sx, sy, sz)
 	
 	self.gameObject = Movable:new(sx, sy, sz, path) -- lua class is called Movable and is registered as so, takes scale
 
 end
 --------------------------------------------------------------------
---debug obj's
---12272_Koala_v1_L3.obj
---Heart.obj
 
-Projectile = MovableLua:new() -- this is how you do inheritance 💥🧠💥  
+
+Projectile = MovableLua:new() 
 Projectile.xSpeed = 0
 Projectile.zSpeed = 0
 Projectile.invFrames = 3
@@ -109,7 +123,7 @@ Player.damage = 10
 Player.shootDebounce = 0
 Player.requiredToShoot = 5
 
-myPlayer = Player:new()--PlayerClass.new(nil, 0, 0, 0, 1, 1, 1)
+myPlayer = Player:new()
 myPlayer:init3DModel("testSphere.obj")
 myPlayer:setPosition(0,0,0)
 myPlayer:setScale(1,1,1)
@@ -191,7 +205,7 @@ end
 	table.insert(spawnPoints, startSpawn)
 
 function readFile()
-local file = io.open("save.lua", "r")
+local file = io.open("save.boll", "r")
 			removeObjects()
 			io.input(file)
 
@@ -200,7 +214,6 @@ local file = io.open("save.lua", "r")
 			for i=1,nrOfSpawnPoints do
 				local x = io.read()
 				local z = io.read()
-				--print(x,z)
 				local startSpawn = Spawnpoint:new() -- default spawner
 				startSpawn:init3DModel("spawnPoint.obj")
 				startSpawn:setPosition(x,heightFromGround,z)
@@ -212,7 +225,6 @@ local file = io.open("save.lua", "r")
 			for i=1,nrOfObstacles do
 				local x = io.read()
 				local z = io.read()
-				--print(x,z)
 				local obstacle = Obstacle:new() -- default obstacle
 				obstacle:init3DModel("obstacle.obj")
 				obstacle:setPosition(x,heightFromGround,z)
@@ -224,7 +236,6 @@ local file = io.open("save.lua", "r")
 			for i=1,nrOfWalls do
 				local x = io.read()
 				local z = io.read()
-				--print(x,z)
 				local wall = Wall:new() -- default wall
 				wall:init3DModel("treeLua.obj")
 				wall:setPosition(x,0,z)
@@ -233,6 +244,15 @@ local file = io.open("save.lua", "r")
 				table.insert(walls, wall)
 			end
 
+			if #spawnPoints == 0 then
+				local startSpawn = Spawnpoint:new() -- default spawner, needed for logic
+				startSpawn:init3DModel("spawnPoint.obj")
+				startSpawn:setPosition(10,heightFromGround,10)
+				startSpawn:setScale(2,0.1,2)
+				table.insert(spawnPoints, startSpawn)	
+			end
+
+
 			io.close(file)
 end
 
@@ -240,38 +260,32 @@ function removeObjects()
 		print("REMOVING")
 		-- removes all objects from scene
 		for bulletIndex,enemyBullet in pairs(enemyBullets) do
-			--table.remove(enemyBullet,bulletIndex)
 			enemyBullets[bulletIndex] = nil
 		end 
 
 		for i,v in pairs(bullets) do
-			--table.remove(bullets, i)
 			bullets[i] = nil
 		end
 
 		for i,v in pairs(enemies) do
 			enemies[i] = nil
-			--table.remove(enemies, i)
 		end
 
 		for i,v in pairs(speedDropTable) do
-			--table.remove(speedDropTable,i)
 			speedDropTable[i] = nil
 		end
 
 		for i,v in pairs(spawnPoints) do
-			--table.remove(speedDropTable,i)
 			spawnPoints[i] = nil
 		end
-		--needs more mandalorian
 		--secretTextToShowWeMadeThisProgram Jakob, Ghazi and the other dude <3 'Barry'
 		for i,v in pairs(heartDropTable) do
 
 			heartDropTable[i] = nil
-			------table.remove(heartDropTable,i)
 		end
 
 end
+
 function Enemy:update(playerVar)
 	local x, y, z = self:getPosition()
 	
@@ -348,7 +362,6 @@ function initEnemies()
 		local myEnemy = Enemy:new()
 		myEnemy:init3DModel("ghost.obj") 
 		myEnemy:setScale(1,3,1)
-
 		local spawnX, spawnY, spawnZ = spawnPoints[math.random(#spawnPoints)]:getPosition()
 		myEnemy:setPosition(spawnX, 0, spawnZ)
 		myEnemy.shootDebounce = math.random(0,10)
@@ -357,14 +370,12 @@ function initEnemies()
 end
 initEnemies()
 
-w = false -- not needed to be reset, kept for visibility
+w = false 
 s = false
 a = false
 d = false
 middleMouseButton = false
---one = false
---two = false
---three = false
+
 
 function handleBulletCollisions()
 	for i,bulletObject in pairs(bullets) do
@@ -422,7 +433,7 @@ function update()
 	end
 
 	if(myPlayer.speed > Player.speed) then
-		myPlayer.speed = myPlayer.speed-0.00002;
+		myPlayer.speed = myPlayer.speed-0.002;
 	end
 	
 	if not editMode then
@@ -550,9 +561,8 @@ function update()
 		for i,v in pairs(speedDropTable) do
 			local collided = checkCollision(v.gameObject, myPlayer.gameObject)
 			if collided then
-				myPlayer.speed = myPlayer.speed + 0.02
+				myPlayer.speed = myPlayer.speed + 0.2
 				table.remove(speedDropTable, i)
-				print("REMOVED", i, "Remaining:", #speedDropTable)
 			end
 		end
 
@@ -570,7 +580,10 @@ function update()
 			end
 		end
 
-		setText("Health: ".. myPlayer.health .. "\nSpeed: "..(math.ceil(myPlayer.speed*100)/100).. "\nWeapon Selected: "..myPlayer.selectedWeapon.."\nScore: "..score)
+		setText("Health: ".. myPlayer.health .. "\nSpeed: "..(math.ceil(myPlayer.speed*100)/100).. "\nWeapon Selected: "..myPlayer.selectedWeapon.."\nScore: "..score.."\n".. controls)
+
+
+
 		myPlayer:handleCheckWeapon()
 
 		handleBulletCollisions()
@@ -662,38 +675,30 @@ function update()
 	if m  and placeTimer == 0 then
 		placeTimer = 0
 		editMode = true
-		print("REMOVE STUFF NOW")
 		-- removes all objects from scene
 		for bulletIndex,enemyBullet in pairs(enemyBullets) do
-			--table.remove(enemyBullet,bulletIndex)
 			enemyBullets[bulletIndex] = nil
 		end 
 
 		for i,v in pairs(bullets) do
-			--table.remove(bullets, i)
 			bullets[i] = nil
 		end
 
 		for i,v in pairs(enemies) do
 			enemies[i] = nil
-			--table.remove(enemies, i)
 		end
 
 		for i,v in pairs(speedDropTable) do
-			--table.remove(speedDropTable,i)
 			speedDropTable[i] = nil
 		end
 
 		for i,v in pairs(spawnPoints) do
-			--table.remove(speedDropTable,i)
 			spawnPoints[i] = nil
 		end
-		--needs more mandalorian
 		--secretTextToShowWeMadeThisProgram Jakob, Ghazi and the other dude <3 'Barry'
 		for i,v in pairs(heartDropTable) do
 
 			heartDropTable[i] = nil
-			------table.remove(heartDropTable,i)
 		end
 	end
 	
@@ -704,17 +709,14 @@ function update()
 		--clear all objects in list
 			for i,v in pairs(obstacles) do
 				obstacles[i] = nil
-				--table.remove(obstacles, i)
 			end
 
 			for i,v in pairs(spawnPoints) do
-				--table.remove(speedDropTable,i)
 				spawnPoints[i] = nil
 			end
 
 			for i,v in pairs(walls) do
 				walls[i] = nil
-				--table.remove(walls, i)
 			end
 			--creates edges
 			createArena()
@@ -726,15 +728,15 @@ function update()
 		if mouseButtonOne and (reqToPlace < placeTimer) then
 			placeTimer = 0
 			
-			local wall = Wall:new() -- top
+			local wall = Wall:new()
 			wall:init3DModel("treeLua.obj")
 			wall:setPosition(x,0,z)
-			wall:setScale(3,1,3)
+			wall:setScale(1,1,1)
 			table.insert(walls, wall)
 		end 
 		if mouseButtonTwo and (reqToPlace < placeTimer) then
 			placeTimer = 0
-			local obstacle = Obstacle:new() -- top
+			local obstacle = Obstacle:new()
 			obstacle:init3DModel("obstacle.obj")
 			obstacle:setPosition(x,heightFromGround,z)
 			obstacle:setScale(2,1,2)
@@ -743,8 +745,7 @@ function update()
 
 		if middleMouseButton and (reqToPlace < placeTimer) then
 			placeTimer = 0
-			print("SPAWN POINT")
-			local spawner = Spawnpoint:new() -- top
+			local spawner = Spawnpoint:new()
 			spawner:init3DModel("spawnPoint.obj")
 			spawner:setPosition(x,heightFromGround,z)
 			spawner:setScale(2,1,2)
@@ -758,73 +759,20 @@ function update()
 
 		if editMode and n then
 			placeTimer = 0
-			print("Turning off edit mode")
 			editMode = false
 
-			if #spawnPoints == 0 then
-				local startSpawn = Spawnpoint:new() -- default spawner, needed for logic
-				startSpawn:init3DModel("spawnPoint.obj")
-				startSpawn:setPosition(10,heightFromGround,10)
-				startSpawn:setScale(2,0.1,2)
-				table.insert(spawnPoints, startSpawn)	
-			end
+			
 		end
 
 		--READ FROM FILE
 		if F1 and (reqToPlace < placeTimer) then
-			removeObjects()
-			print("READING FILE")
-			print(F1)
-			placeTimer = 0
-			--READS SPAWPOINTS FROM FILE
-			local file = io.open("save.lua", "r")
-			io.input(file)
-
-			local nrOfSpawnPoints = io.read() 
-			print("Spawnpoints ".. nrOfSpawnPoints)
-			for i=1,nrOfSpawnPoints do
-				local x = io.read()
-				local z = io.read()
-				--print(x,z)
-				local startSpawn = Spawnpoint:new() -- default spawner
-				startSpawn:init3DModel("spawnPoint.obj")
-				startSpawn:setPosition(x,(-0.7),z)
-				startSpawn:setScale(2,1,2)
-				table.insert(spawnPoints, startSpawn)
-			end
-			--READS OBSTACLES FROM FILE
-			local nrOfObstacles = io.read() 
-			for i=1,nrOfObstacles do
-				local x = io.read()
-				local z = io.read()
-				--print(x,z)
-				local obstacle = Obstacle:new() -- default obstacle
-				obstacle:init3DModel("obstacle.obj")
-				obstacle:setPosition(x,(-0.7),z)
-				obstacle:setScale(2,1,2)
-				table.insert(obstacles, obstacle)
-			end
-			--READS WALLS FROM FILE
-			local nrOfWalls = io.read() 
-			for i=1,nrOfWalls do
-				local x = io.read()
-				local z = io.read()
-				--print(x,z)
-				local wall = Wall:new() -- default wall
-				wall:init3DModel("treeLua.obj")
-				wall:setPosition(x,0,z)
-				wall:setScale(3,1,3)
-				wall:setBB(1,"treeLua.obj")
-				table.insert(walls, wall)
-			end
-
-			io.close(file)
+			readFile()
 		end
 
 		--WRITE TO FILE
 		if F2 and (reqToPlace < placeTimer) then
 			placeTimer = 0
-			local file = io.open("save.lua", "w")
+			local file = io.open("save.boll", "w")
 			io.output(file)
 			--WRITES SPAWNPOINTS TO FILE
 			io.write(tostring(#spawnPoints)) -- write nr of spawnpoints first

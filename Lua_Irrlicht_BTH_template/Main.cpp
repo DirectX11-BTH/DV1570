@@ -16,10 +16,8 @@
 #include <string>
 #include <algorithm>
 
-//#include "Vector3Lua.h"
-
-const int HEIGHT = 720;
-const int WIDTH = 1080;
+const int HEIGHT = 1080;
+const int WIDTH = 1920;
 
 using namespace scene;
 using namespace irr;
@@ -96,21 +94,11 @@ int setText(lua_State* luaState)
 	if (lua_isstring(luaState, -1))
 	{
 		std::string textString = lua_tostring(luaState, -1);
-		//displayString = lua_tostring(luaState, -1);
-		//std::cout << displayString.data() << std::endl;
-
 		std::wstring tempString(textString.length(), L' ');
 		std::copy(textString.begin(), textString.end(), tempString.begin());
 
 		displayString = tempString;
-		
-		
-		/*wstring wideusername;
-		for(int i = 0; i < textString.length(); ++i)
-				wideusername += wchar_t( textString[i] );
 
-		const wchar_t* your_result = wideusername.c_str();*/
-		
 
 
 		lua_pop(luaState, 1);
@@ -122,16 +110,13 @@ int setText(lua_State* luaState)
 int getMouseHit(lua_State* state)
 {
 
-	core::line3df ray = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(vector2d<irr::s32>(globalReciever->GetMouseState().Position.X, globalReciever->GetMouseState().Position.Y), smgr->getActiveCamera());//irr::getRayFromScreenCoordinates(mouseX, mouseY, &device);
+	core::line3df ray = smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(vector2d<irr::s32>(globalReciever->GetMouseState().Position.X, globalReciever->GetMouseState().Position.Y), smgr->getActiveCamera());
 	core::vector3d<f32>startintersection;
-	//node->getBoundingBox().intersectsWithLine()
-	//std::cout << ray.end.X << " " << ray.end.Z << std::endl;
 
 	core::vector3df collisionPoint;
 	core::triangle3df collisionTri;
 	scene::ISceneNode* pNode = 0;
 	pNode = smgr->getSceneCollisionManager()->getSceneNodeAndCollisionPointFromRay(ray, collisionPoint, collisionTri);
-	//std::cout << collisionPoint.X << " " << collisionPoint.Y << " " << collisionPoint.Z << " " << std::endl;
 
 	lua_pushnumber(state, collisionPoint.Z);
 	lua_pushnumber(state, collisionPoint.Y);
@@ -142,12 +127,9 @@ int getMouseHit(lua_State* state)
 
 void pushKeysToLua(float mouseX, float mouseY)
 {
-	//lua_getglobal(luaState, "w");
 	lua_pushboolean(luaState, w);
 	lua_setglobal(luaState, "w");
-	//lua_pop(luaState, -1);
 
-	//lua_getglobal(luaState, "s");
 	lua_pushboolean(luaState, s);
 	lua_setglobal(luaState, "s");
 
@@ -326,8 +308,6 @@ int main()
 	video::IVideoDriver* driver = device->getVideoDriver();
 	smgr = device->getSceneManager();
 	gui::IGUIEnvironment* guienv = device->getGUIEnvironment();
-	//IGUIStaticText* textPtr = guienv->addStaticText(L"Hello World! This is the Irrlicht Software renderer!", core::rect<s32>(10, 10, 300, 55), true, true, 0, -1, true);
-	//textPtr->font
 	IGUISkin* skin = guienv->getSkin();
 	gui::IGUIFont* font2 = device->getGUIEnvironment()->getFont("myfont.xml");
 	skin->setFont(font2);
@@ -338,13 +318,7 @@ int main()
 	scene::ILightSceneNode* light3 = smgr->addLightSceneNode(0, core::vector3df(33, 22, 33), video::SColorf(0.1f, 0.1f, 0.1f), 111.f);
 	light->enableCastShadow(true);
 	video::SLight testSlight = light->getLightData();
-
-	//light->setLightData()
-	//driver->turnLightOn(0, false);
 	
-	//biggerFont->
-	//guienv->addStaticText(L"Test", true, rect<int>(10,10,200,30));
-
 	luaState = luaL_newstate();
 	luaL_openlibs(luaState);
 
@@ -360,8 +334,6 @@ int main()
 	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode(test);
 
 	node->setMaterialFlag(video::EMF_LIGHTING, true);
-	//node->setVisible(false);
-	// collision initialize
 	scene::ITriangleSelector* selector = 0;
 	if(node)
 	{
@@ -369,39 +341,16 @@ int main()
 		node->setTriangleSelector(selector);
 	}
 
-
 	node->setScale({ 100, 1, 100 });
-
-	//test->setBoundingBox(core::aabbox3df(-3.f,-3.f,-3.f,3.f,3.f,3.f));
 	smgr->addCameraSceneNode(0, vector3df(0, 25, 0), vector3df(0, 0, 0));
-
-	//light->setDebugDataVisible(scene::EDS_BBOX);
-
 	
 	luaL_dofile(luaState, "./update.lua");
 	while (device->run())
 	{
-		//::cout << driver->getFPS()<< std::endl;
+
 		driver->enableClipPlane(0,false);
 		checkKeys();
 		pushKeysToLua(receiver.GetMouseState().Position.X, receiver.GetMouseState().Position.Y);
-
-		/*
-		irr::core::line3df collRay;
-
-		collRay = pCollMgr->getRayFromScreenCoordinates(mousePos, pSceneMgr->getActiveCamera()); // this appears to be getting unique values
-	
-		// get the collision 
-		core::vector3df collPoint; 
-		core::triangle3df collTriangle; 
-		scene::ISceneNode* pNode = 0; 
-	
-		pNode = pCollMgr->getSceneNodeAndCollisionPointFromRay(collRay, collPoint, collTriangle);
-		*/
-
-		//ground.getIntersectionWithLine(ray.start,ray.end,startintersection);
-		//Separat skript som körs varje game loop - idk?
-		//luaL_dofile("./update.lua");
 		
 		lua_getglobal(luaState, "update");
 		int error = lua_pcall(luaState, 0, 0, 0, 0);
